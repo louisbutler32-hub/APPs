@@ -53,10 +53,15 @@ function rewrite(dir) {
     if (statSync(path).isDirectory()) rewrite(path);
     else if (/\.(html|js|css|json)$/.test(name) && !path.includes(`${join(preview, "data")}`)) {
       let text = readFileSync(path, "utf8");
-      // Match the name only as a whole path part, so identifiers such as `__next_f` are left alone.
+      // Match the name only where it is part of a path: next to a slash, or a whole file name with
+      // its extension. Identifiers such as `__next_f`, and the `._next` that animation code uses
+      // for its own lists, must be left alone or the script stops being valid.
       for (const [from, to] of renames) {
         const escaped = from.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-        text = text.replace(new RegExp(`(?<![\\w-])${escaped}(?![\\w-])`, "g"), to);
+        const pattern = from.includes(".")
+          ? `(?<![\\w.-])${escaped}(?![\\w-])`
+          : `(?<![\\w.-])${escaped}(?=/)|(?<=/)${escaped}(?![\\w-])`;
+        text = text.replace(new RegExp(pattern, "g"), to);
       }
       writeFileSync(path, text);
     }

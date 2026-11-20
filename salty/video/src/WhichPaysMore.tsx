@@ -1,6 +1,6 @@
 import { Easing, Interactive, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { z } from "zod";
-import { COLOR, display, FONT, money, SAFE } from "./brand";
+import { COLOR, FONT, RADIUS, SAFE, display, money } from "./brand";
 import { EndCard, Stage } from "./parts";
 
 /**
@@ -35,10 +35,8 @@ const JobCard: React.FC<{ name: string; pay: number; top: number; fromLeft: bool
         right: SAFE.right,
         top,
         height: 360,
-        borderRadius: 48,
-        border: `7px solid ${COLOR.ink}`,
-        boxShadow: `14px 14px 0 ${COLOR.ink}`,
-        backgroundColor: revealed && wins ? COLOR.zest : COLOR.white,
+        borderRadius: RADIUS.box,
+        backgroundColor: revealed && wins ? COLOR.zest : COLOR.paper,
         padding: "40px 52px",
         display: "flex",
         flexDirection: "column",
@@ -102,10 +100,9 @@ export const WhichPaysMore: React.FC<Props> = ({ a, b, locale, currency, source,
           top: 1045 - 95,
           width: 190,
           height: 190,
-          borderRadius: 999,
+          borderRadius: RADIUS.box,
           backgroundColor: counting ? COLOR.chilli : COLOR.ink,
           color: counting ? COLOR.ink : COLOR.salt,
-          border: `7px solid ${COLOR.ink}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

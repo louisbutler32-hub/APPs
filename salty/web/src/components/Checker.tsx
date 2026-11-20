@@ -15,7 +15,9 @@ import { cleanPlaceName, inName, OTHER_COUNTRIES, placeFor, typedPlace, worldCou
 import { EmailForm } from "./EmailForm";
 import { EstimateResult } from "./EstimateResult";
 import { HiringResult } from "./HiringResult";
+import { Grains } from "./Grains";
 import { Result } from "./Result";
+import { scrollToElement } from "./SmoothScroll";
 
 type Props = {
   /** Countries that have data, in display order. */
@@ -268,7 +270,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
     setChecked({ mode: "estimate", estimate: outcome.estimate, pay: yearly, place: where });
     // The job title is free text, so it is not recorded: only that an estimate was made, and where.
     track("check", { mode: "estimate", country: where.code });
-    requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    requestAnimationFrame(() => scrollToElement(resultRef.current));
   }
 
   function onSubmit(event: React.FormEvent) {
@@ -300,20 +302,21 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
     setChecked({ mode, job: chosen, pay: amount });
     const place = amount === null ? null : position(chosen, amount, rank(chosen, amount));
     track("check", { mode, country: code, job: chosen.code, verdict: place === null ? "none" : verdictFor(place).id });
-    requestAnimationFrame(() => resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    requestAnimationFrame(() => scrollToElement(resultRef.current));
   }
 
   return (
-    <div>
-      <div className="grid gap-7 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-14">
-        <div>{intro}</div>
-        <div className="relative rounded-3xl border-2 border-ink bg-white p-5 shadow-hard-brine sm:p-7">
-          <span aria-hidden className="absolute -top-4 right-4 rotate-6 rounded-full border-2 border-ink bg-zest px-3 py-1 text-xs font-bold tracking-wide shadow-hard-sm">
-            Free · 10 seconds
-          </span>
+    <>
+      {/* The page opens on one block of brine: the words on the left, the pay check as a sheet of salt on the right. */}
+      {/* Pulled up a pixel so no hairline of the page colour can show between the blue header and the blue screen. */}
+      <section className="relative -mt-px bg-brine text-white">
+        <Grains tone="bg-white" className="opacity-25" />
+        <div className="relative mx-auto grid max-w-6xl gap-8 px-5 pt-4 pb-12 sm:px-8 sm:pt-10 sm:pb-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-16">
+        <div className="on-dark">{intro}</div>
+        <div className="rounded-box bg-salt p-5 text-ink sm:p-7">
           {!fixedCountry && (
             <div className="mb-5">
-              <div className="flex flex-wrap gap-2" role="group" aria-label="Country">
+              <div className="grid auto-cols-fr grid-flow-col gap-1 rounded-ctl bg-salt-deep p-1" role="group" aria-label="Country">
                 {available.map((item) => {
                   const selected = !other && item === code;
                   return (
@@ -322,13 +325,9 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                       type="button"
                       aria-pressed={selected}
                       onClick={() => changeCountry(item)}
-                      className={`rounded-full border-2 px-3 py-1.5 text-sm font-semibold transition-colors ${
-                        selected ? "border-ink bg-ink text-salt" : "border-ink/20 text-ink hover:border-ink"
-                      }`}
+                      aria-label={COUNTRIES[item].name}
+                      className={`press rounded-[4px] px-3 py-2.5 text-sm font-semibold ${selected ? "bg-ink text-salt" : "text-ink hover:bg-paper"}`}
                     >
-                      <span aria-hidden className="mr-1.5">
-                        {COUNTRIES[item].flag}
-                      </span>
                       {item.toUpperCase()}
                     </button>
                   );
@@ -337,13 +336,8 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                   type="button"
                   aria-pressed={other}
                   onClick={() => chooseOther(otherIso)}
-                  className={`rounded-full border-2 px-3 py-1.5 text-sm font-semibold transition-colors ${
-                    other ? "border-ink bg-ink text-salt" : "border-ink/20 text-ink hover:border-ink"
-                  }`}
+                  className={`press rounded-[4px] px-3 py-2.5 text-sm font-semibold ${other ? "bg-ink text-salt" : "text-ink hover:bg-paper"}`}
                 >
-                  <span aria-hidden className="mr-1.5">
-                    🌍
-                  </span>
                   Other
                 </button>
               </div>
@@ -356,7 +350,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                     id={`${jobInputId}-where`}
                     value={otherIso}
                     onChange={(event) => chooseOther(event.target.value)}
-                    className="h-12 w-full rounded-xl border-2 border-ink bg-salt px-3 text-base font-medium"
+                    className="field h-12 px-3 text-base font-medium"
                   >
                     <option value="">Pick your country…</option>
                     {OTHER_CHOICES.map((item) => (
@@ -381,7 +375,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                           setOtherName(event.target.value);
                           setError(null);
                         }}
-                        className="h-12 w-full rounded-xl border-2 border-ink bg-salt px-3 text-base font-medium placeholder:font-normal placeholder:text-ink-soft/60"
+                        className="field h-12 px-3 text-base font-medium placeholder:font-normal"
                       />
                     </>
                   )}
@@ -392,12 +386,12 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
 
           <form onSubmit={onSubmit} noValidate>
               {estimateOnly && (
-                <p className="mb-5 rounded-2xl border-2 border-dashed border-ink/40 p-3 text-sm text-ink-soft">
+                <p className="mb-5 rounded-ctl border-2 border-dashed border-ink/40 p-3 text-sm text-ink-soft">
                   <strong className="text-ink">Outside the UK and US, Salty runs on AI estimates.</strong> We don&apos;t have official figures
                   for {place?.inName ?? "other countries"} yet, so you get a rough range instead of an exact rank.
                 </p>
               )}
-              <div className={`mb-5 grid grid-cols-3 gap-1 rounded-2xl border-2 border-ink bg-salt p-1 ${estimateOnly ? "hidden" : ""}`} role="tablist" aria-label="What do you want to check?">
+              <div className={`mb-6 grid grid-cols-3 border-b-2 border-ink ${estimateOnly ? "hidden" : ""}`} role="tablist" aria-label="What do you want to check?">
                 {MODES.map((item) => (
                   <button
                     key={item.id}
@@ -411,7 +405,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                       setError(null);
                       track("mode", { mode: item.id });
                     }}
-                    className={`rounded-xl px-2 py-2.5 text-sm font-semibold transition-colors ${mode === item.id ? "bg-ink text-salt" : "text-ink hover:bg-white"}`}
+                    className={`press rounded-t-[4px] px-2 py-3 text-sm font-semibold ${mode === item.id ? "bg-ink text-salt" : "text-ink-soft hover:text-ink"}`}
                   >
                     {item.tab}
                   </button>
@@ -419,7 +413,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
               </div>
 
               <div className="relative">
-                <label htmlFor={jobInputId} className="eyebrow mb-2 block text-ink-soft">
+                <label htmlFor={jobInputId} className="label mb-2 block">
                   {mode === "pay" ? "Your job" : mode === "offer" ? "The job" : "The role you're hiring for"}
                 </label>
                 <input
@@ -445,13 +439,13 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                   onFocus={() => setOpen(true)}
                   onBlur={() => setTimeout(() => setOpen(false), 120)}
                   onKeyDown={onJobKeyDown}
-                  className="h-14 w-full rounded-xl border-2 border-ink bg-salt px-4 text-lg font-medium placeholder:font-normal placeholder:text-ink-soft/60"
+                  className="field h-14 px-4 text-lg font-medium placeholder:font-normal"
                 />
                 {open && matches.length > 0 && (
                   <ul
                     id={listId}
                     role="listbox"
-                    className="absolute inset-x-0 top-full z-20 mt-2 max-h-72 overflow-auto rounded-xl border-2 border-ink bg-white py-1 shadow-hard-sm"
+                    className="absolute inset-x-0 top-full z-20 mt-2 max-h-72 overflow-auto rounded-ctl border-2 border-ink bg-paper py-1 shadow-float"
                   >
                     {matches.map((match, index) => (
                       <li
@@ -487,7 +481,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                   </ul>
                 )}
                 {open && !estimateOnly && jobs !== null && query.trim().length >= 2 && matches.length === 0 && custom === null && (
-                  <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-xl border-2 border-ink bg-white px-4 py-3 text-sm shadow-hard-sm">
+                  <div className="absolute inset-x-0 top-full z-20 mt-2 rounded-ctl border-2 border-ink bg-paper px-4 py-3 text-sm shadow-float">
                     <p>No match in the official figures. Try a simpler title, like “teacher” or “driver”.</p>
                     {canOfferEstimate && (
                       <button
@@ -496,7 +490,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                           event.preventDefault();
                           chooseEstimate(query);
                         }}
-                        className="mt-2 font-semibold text-brine underline underline-offset-4"
+                        className="mt-2 font-semibold text-brine underline"
                       >
                         Or get an AI estimate for “{query.trim()}”
                       </button>
@@ -505,7 +499,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                 )}
                 {custom !== null && (
                   <p className="mt-2 flex items-center gap-2 text-sm">
-                    <span className="eyebrow rounded-full border-2 border-ink bg-ink px-2 py-0.5 text-salt">AI estimate</span>
+                    <span className="tag bg-ink text-salt">AI estimate</span>
                     <span className="text-ink-soft">We&apos;ll look this job up for you.</span>
                   </p>
                 )}
@@ -514,10 +508,10 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
               {mode !== "hiring" && (
                 <div className="mt-5">
                   <div className="mb-2 flex items-end justify-between gap-3">
-                    <label htmlFor={payInputId} className="eyebrow text-ink-soft">
+                    <label htmlFor={payInputId} className="label">
                       {current.payLabel}
                     </label>
-                    <div className="flex shrink-0 rounded-full border-2 border-ink p-0.5 text-sm font-semibold whitespace-nowrap" role="group" aria-label="Pay period">
+                    <div className="flex shrink-0 gap-0.5 rounded-ctl bg-salt-deep p-0.5 text-sm font-semibold whitespace-nowrap" role="group" aria-label="Pay period">
                       {(["year", "month", "hour"] as const).map((item) => (
                         <button
                           key={item}
@@ -525,7 +519,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                           aria-pressed={period === item}
                           aria-label={`per ${item}`}
                           onClick={() => setPeriod(item)}
-                          className={`rounded-full px-2.5 py-1 capitalize ${period === item ? "bg-ink text-salt" : "text-ink"}`}
+                          className={`press rounded-[4px] px-3 py-1.5 capitalize ${period === item ? "bg-ink text-salt" : "text-ink hover:bg-paper"}`}
                         >
                           {item}
                         </button>
@@ -533,7 +527,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                     </div>
                   </div>
                   <div className="relative">
-                    <span aria-hidden className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 font-display text-2xl font-extrabold">
+                    <span aria-hidden className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-2xl font-extrabold">
                       {place ? currencySymbol(place) : ""}
                     </span>
                     <input
@@ -547,7 +541,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                         setPayText(event.target.value);
                         setError(null);
                       }}
-                      className={`h-16 w-full rounded-xl border-2 border-ink bg-salt pr-4 font-display text-3xl font-extrabold tracking-tight tabular-nums placeholder:font-semibold placeholder:text-ink-soft/40 ${
+                      className={`field h-16 pr-4 text-3xl font-extrabold tracking-tight tabular-nums placeholder:font-semibold ${
                         place ? (currencySymbol(place).length > 1 ? "pl-20" : "pl-12") : "pl-4"
                       }`}
                     />
@@ -561,12 +555,12 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
               )}
 
               {error && (
-                <p role="alert" className="mt-4 rounded-lg bg-chilli/15 px-3 py-2 text-sm font-medium">
+                <p role="alert" className="mt-4 rounded-ctl bg-chilli/15 px-3 py-2 text-sm font-medium">
                   {error}
                 </p>
               )}
               {loadFailed && (
-                <p role="alert" className="mt-4 rounded-lg bg-chilli/15 px-3 py-2 text-sm font-medium">
+                <p role="alert" className="mt-4 rounded-ctl bg-chilli/15 px-3 py-2 text-sm font-medium">
                   The pay figures didn&apos;t load. Check your connection and refresh.
                 </p>
               )}
@@ -574,7 +568,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
               <button
                 type="submit"
                 disabled={estimating}
-                className="press mt-6 h-16 w-full rounded-xl border-2 border-ink bg-brine font-display text-2xl font-extrabold tracking-tight text-white shadow-hard-sm disabled:opacity-70"
+                className="press display mt-6 h-16 w-full rounded-ctl bg-brine text-2xl text-white hover:bg-brine-deep disabled:opacity-70"
               >
                 {estimating ? "Working it out…" : wantsEstimate ? "Estimate my pay" : current.button}
               </button>
@@ -586,12 +580,12 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                       ? "Free. A job we haven't seen is sent to our AI to look up. Your pay is not."
                       : "Free. No sign-up. Your pay never leaves this device."
                     : mode === "hiring"
-                      ? "Free. Official figures, not job-ad guesses."
+                      ? "Free. Worked out from official figures."
                       : "Free. No sign-up. Your pay never leaves this device."}
               </p>
           </form>
           {estimateOnly && (
-            <div className="mt-6 border-t border-ink/10 pt-5">
+            <div className="mt-6 border-t border-ink/15 pt-5">
               <p className="mb-3 text-sm text-ink-soft">Want official figures for {place?.inName ?? "your country"}? Get an email if we add them:</p>
               <EmailForm
                 key={otherIso}
@@ -604,16 +598,18 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
             </div>
           )}
         </div>
-      </div>
+        </div>
+      </section>
 
-      <div ref={resultRef} className="mx-auto max-w-3xl scroll-mt-6">
-        {checked && checked.mode === "estimate" && (
-          <div className="mt-12">
+      <div ref={resultRef} className="mx-auto max-w-3xl scroll-mt-6 px-5 sm:px-8">
+        {estimating && <ResultSkeleton />}
+        {!estimating && checked && checked.mode === "estimate" && (
+          <div className="my-12 sm:my-16">
             <EstimateResult key={`${checked.estimate.title}-${checked.pay}`} country={checked.place} estimate={checked.estimate} pay={checked.pay} />
           </div>
         )}
-        {checked && checked.mode !== "estimate" && dataset && isLive && (
-          <div className="mt-12">
+        {!estimating && checked && checked.mode !== "estimate" && dataset && isLive && (
+          <div className="my-12 sm:my-16">
             {checked.mode === "hiring" || checked.pay === null ? (
               <HiringResult key={checked.job.code} country={country} data={dataset} job={checked.job} />
             ) : (
@@ -622,6 +618,23 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
           </div>
         )}
       </div>
+    </>
+  );
+}
+
+/**
+ * The outline of a result, shown while an AI estimate is being worked out (which can take up to a
+ * minute), so the wait has a shape and the page does not jump when the answer lands.
+ */
+function ResultSkeleton() {
+  return (
+    <div className="my-12 rounded-box border border-ink/15 bg-paper p-6 sm:my-16 sm:p-9" role="status" aria-label="Working out an estimate">
+      <div className="skeleton h-8 w-36" />
+      <div className="skeleton mt-7 h-5 w-48" />
+      <div className="skeleton mt-3 h-24 w-64 max-w-full sm:h-32" />
+      <div className="skeleton mt-4 h-8 w-80 max-w-full" />
+      <div className="skeleton mt-10 h-3.5 w-full" />
+      <div className="skeleton mt-8 h-16 w-full" />
     </div>
   );
 }

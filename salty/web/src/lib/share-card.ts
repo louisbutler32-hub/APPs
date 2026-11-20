@@ -21,7 +21,7 @@ const HEIGHT = 1350;
 const TONES: Record<VerdictId, { chip: string; chipText: string }> = {
   "extra-salty": { chip: "#ff4d2e", chipText: "#0f0f12" },
   salty: { chip: "#ffad1f", chipText: "#0f0f12" },
-  fair: { chip: "#ffffff", chipText: "#0f0f12" },
+  fair: { chip: "#0f0f12", chipText: "#f4f1ea" },
   seasoned: { chip: "#2b36ff", chipText: "#ffffff" },
   "top-shelf": { chip: "#d9f24b", chipText: "#0f0f12" },
 };
@@ -94,15 +94,11 @@ function shaker(ctx: CanvasRenderingContext2D, x: number, y: number, scale: numb
 
 /** Draws the 4:5 share image (the shape that fills the most screen on Instagram and TikTok photo posts). */
 export async function drawShareCard(canvas: HTMLCanvasElement, content: ShareCardContent): Promise<void> {
+  // One typeface, as on the site: heavy and condensed for the figure, regular for the small lines.
   const display = fontFamily("--font-bricolage", "system-ui, sans-serif");
-  const mono = fontFamily("--font-geist-mono", "ui-monospace, monospace");
-  const sans = fontFamily("--font-geist", "system-ui, sans-serif");
-  // Make sure the brand fonts are ready, otherwise the first draw falls back to a system face.
-  await Promise.all([
-    document.fonts.load(`800 100px ${display}`),
-    document.fonts.load(`500 30px ${mono}`),
-    document.fonts.load(`500 40px ${sans}`),
-  ]).catch(() => undefined);
+  const sans = display;
+  // Make sure the brand font is ready, otherwise the first draw falls back to a system face.
+  await Promise.all([document.fonts.load(`800 100px ${display}`), document.fonts.load(`500 40px ${sans}`)]).catch(() => undefined);
 
   canvas.width = WIDTH;
   canvas.height = HEIGHT;
@@ -130,11 +126,11 @@ export async function drawShareCard(canvas: HTMLCanvasElement, content: ShareCar
   ctx.fillText("salty", pad, 170);
   grain(ctx, pad + ctx.measureText("salty").width + 16, 158, 19, 18, "#2b36ff");
 
-  // Eyebrow.
-  ctx.letterSpacing = "4px";
-  ctx.font = `500 28px ${mono}`;
+  // What this is, and where.
+  ctx.letterSpacing = "0px";
+  ctx.font = `600 34px ${sans}`;
   ctx.fillStyle = "#4b4a52";
-  ctx.fillText(`MY PAY CHECK · ${content.countryLabel.toUpperCase()}`, pad, 330);
+  ctx.fillText(`My pay check, ${content.countryLabel}`, pad, 330);
 
   // The figure, shrunk to fit if it is words rather than a number.
   ctx.fillStyle = ink;
@@ -166,25 +162,18 @@ export async function drawShareCard(canvas: HTMLCanvasElement, content: ShareCar
     y += 50;
   }
 
-  // Verdict chip with a hard shadow, sitting above the footer.
+  // The verdict: a flat block of its colour, sitting above the footer.
   ctx.font = `800 semi-condensed 56px ${display}`;
   ctx.letterSpacing = "-1px";
-  const label = content.verdictLabel.toUpperCase();
+  const label = content.verdictLabel;
   const shakerWidth = content.shakers * 50;
   const chipWidth = ctx.measureText(label).width + 72 + (shakerWidth ? shakerWidth + 18 : 0);
   const chipHeight = 104;
   const chipY = HEIGHT - 300;
-  ctx.fillStyle = ink;
-  ctx.beginPath();
-  ctx.roundRect(pad + 10, chipY + 10, chipWidth, chipHeight, 26);
-  ctx.fill();
   ctx.fillStyle = tone.chip;
-  ctx.strokeStyle = ink;
-  ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.roundRect(pad, chipY, chipWidth, chipHeight, 26);
+  ctx.roundRect(pad, chipY, chipWidth, chipHeight, 12);
   ctx.fill();
-  ctx.stroke();
   ctx.fillStyle = tone.chipText;
   ctx.fillText(label, pad + 36, chipY + 72);
   let shakerX = pad + 36 + ctx.measureText(label).width + 22;
@@ -200,7 +189,7 @@ export async function drawShareCard(canvas: HTMLCanvasElement, content: ShareCar
   ctx.letterSpacing = "-1px";
   ctx.font = `800 semi-condensed 50px ${display}`;
   ctx.fillText("Are you underpaid?", pad, HEIGHT - 50);
-  ctx.font = `500 34px ${mono}`;
+  ctx.font = `600 36px ${sans}`;
   ctx.letterSpacing = "0px";
   ctx.fillStyle = "#d9f24b";
   const hostWidth = ctx.measureText(content.host).width;

@@ -5,6 +5,7 @@ import { isQuiet, markInterrupted, quieten, RESULT_ID, setFunnel, START_PLAN_EVE
 import { remember } from "@/lib/signup";
 import { track } from "@/lib/track";
 import { EmailForm } from "./EmailForm";
+import { CloseIcon } from "./icons";
 
 const CHECKOUT = process.env.NEXT_PUBLIC_PLAN_CHECKOUT_URL ?? "";
 const PRICE = process.env.NEXT_PUBLIC_PLAN_PRICE ?? "";
@@ -121,7 +122,7 @@ export function ExitPrompt() {
           close("accepted");
           startPlan();
         }}
-        className="press h-14 w-full rounded-xl border-2 border-ink bg-brine px-6 text-base font-semibold text-white shadow-hard-sm"
+        className="press h-14 w-full rounded-ctl bg-brine px-6 text-base font-semibold text-white hover:bg-brine-deep"
       >
         Build my raise plan
       </button>
@@ -134,7 +135,7 @@ export function ExitPrompt() {
           track("prompt", { action: "accepted", offer: offer.id });
           close("accepted");
         }}
-        className="press flex h-14 w-full items-center justify-center rounded-xl border-2 border-ink bg-brine px-6 text-base font-semibold text-white shadow-hard-sm"
+        className="press flex h-14 w-full items-center justify-center rounded-ctl bg-brine px-6 text-base font-semibold text-white hover:bg-brine-deep"
       >
         Get the full plan{PRICE ? ` · ${PRICE}` : ""}
       </a>
@@ -154,9 +155,9 @@ export function ExitPrompt() {
         type="button"
         onClick={() => close("closed")}
         aria-label="Close"
-        className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full border-2 border-ink bg-white text-lg leading-none font-semibold hover:bg-ink hover:text-salt"
+        className="press absolute top-2 right-2 flex size-11 items-center justify-center rounded-ctl hover:bg-ink hover:text-salt"
       >
-        <span aria-hidden>×</span>
+        <CloseIcon />
       </button>
       <h2 id="exit-title" className={`display pr-10 ${quiet ? "text-2xl" : "text-[clamp(1.9rem,8vw,2.5rem)]"}`}>
         {offer.title}
@@ -169,7 +170,7 @@ export function ExitPrompt() {
   // Second prompt of the visit: a card in the corner, no backdrop, nothing blocked.
   if (quiet) {
     return (
-      <aside aria-labelledby="exit-title" className="fixed inset-x-3 bottom-3 z-40 animate-rise rounded-2xl border-2 border-ink bg-salt p-5 shadow-hard sm:inset-x-auto sm:right-5 sm:bottom-5 sm:w-96">
+      <aside aria-labelledby="exit-title" className="fixed inset-x-3 bottom-3 z-40 animate-rise rounded-box bg-salt p-5 shadow-float sm:inset-x-auto sm:right-5 sm:bottom-5 sm:w-96">
         {panel}
       </aside>
     );
@@ -178,9 +179,9 @@ export function ExitPrompt() {
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="exit-title">
       <button type="button" aria-label="Close" tabIndex={-1} onClick={() => close("closed")} className="absolute inset-0 cursor-default bg-ink/60" />
-      <div className="relative w-full max-w-md animate-rise rounded-t-3xl border-2 border-ink bg-salt p-6 shadow-hard sm:rounded-3xl sm:p-8">
+      <div data-lenis-prevent className="relative w-full max-w-md animate-rise rounded-t-box bg-salt p-6 shadow-float sm:rounded-box sm:p-8">
         {panel}
-        <button type="button" onClick={() => close("closed")} className="mt-2 w-full rounded-xl py-3 text-center font-semibold underline underline-offset-4">
+        <button type="button" onClick={() => close("closed")} className="mt-2 w-full rounded-ctl py-3 text-center font-semibold underline">
           Not now
         </button>
       </div>
@@ -220,7 +221,7 @@ export function NextStepBar() {
   if (!relevant || !ready || dismissed || planInView || funnel.prompt !== "none") return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-30 animate-rise border-t-2 border-ink bg-zest pb-[env(safe-area-inset-bottom)]">
+    <div className="fixed inset-x-0 bottom-0 z-30 animate-rise bg-zest pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-2.5">
         <p className="min-w-0 flex-1 text-sm font-semibold">Next: your free raise plan. The figure to ask for, and how.</p>
         <button
@@ -229,12 +230,12 @@ export function NextStepBar() {
             track("prompt", { action: "accepted", offer: "bar" });
             startPlan();
           }}
-          className="press shrink-0 rounded-full border-2 border-ink bg-ink px-4 py-1.5 text-sm font-semibold text-salt"
+          className="press shrink-0 rounded-ctl bg-ink px-4 py-2.5 text-sm font-semibold text-salt hover:bg-brine"
         >
           Build it
         </button>
-        <button type="button" onClick={() => setDismissed(true)} aria-label="Hide" className="flex size-8 shrink-0 items-center justify-center rounded-full text-lg leading-none font-semibold hover:bg-ink hover:text-salt">
-          <span aria-hidden>×</span>
+        <button type="button" onClick={() => setDismissed(true)} aria-label="Hide" className="press flex size-11 shrink-0 items-center justify-center rounded-ctl hover:bg-ink hover:text-salt">
+          <CloseIcon className="size-4" />
         </button>
       </div>
     </div>

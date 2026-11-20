@@ -9,6 +9,8 @@ import { fullPlan, openingLines, QUESTIONS, strength, target, timing, type Answe
 import { remember } from "@/lib/signup";
 import { track } from "@/lib/track";
 import { EmailForm } from "./EmailForm";
+import { CheckIcon, LockIcon } from "./icons";
+import { scrollToElement } from "./SmoothScroll";
 
 /** `official` is false when the figures behind the plan are an AI estimate rather than official statistics. */
 type Props = { country: Place; job: Job; pay: number; underpaid: boolean; official?: boolean };
@@ -20,7 +22,7 @@ const CODE = process.env.NEXT_PUBLIC_PLAN_CODE ?? "";
 const PREVIEW = process.env.NEXT_PUBLIC_PREVIEW === "1";
 const UNLOCK_KEY = "salty.plan";
 
-const LEVEL_TONE = { Strong: "bg-zest", Solid: "bg-amber", "Needs building": "bg-white" } as const;
+const LEVEL_TONE = { Strong: "bg-zest text-ink", Solid: "bg-amber text-ink", "Needs building": "border border-ink/40 text-ink" } as const;
 
 export function RaisePlan({ country, job, pay, underpaid, official = true }: Props) {
   const [stage, setStage] = useState<"intro" | "survey" | "plan">("intro");
@@ -32,7 +34,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
   const top = useRef<HTMLDivElement>(null);
   const m = (value: number) => money(country, value);
 
-  const scrollTop = () => requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  const scrollTop = () => requestAnimationFrame(() => scrollToElement(top.current));
 
   // Tell the prompts where this visitor has got to, so nothing interrupts the questions.
   useEffect(() => {
@@ -45,7 +47,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
     const begin = () => {
       setStage((current) => (current === "intro" ? "survey" : current));
       setUnlocked(remember.get(UNLOCK_KEY) === "1");
-      requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      requestAnimationFrame(() => scrollToElement(top.current));
     };
     window.addEventListener(START_PLAN_EVENT, begin);
     return () => window.removeEventListener(START_PLAN_EVENT, begin);
@@ -81,14 +83,13 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
 
   if (stage === "intro") {
     return (
-      <div ref={top} id="raise-plan" className="scroll-mt-6 rounded-3xl border-2 border-ink bg-zest p-6 shadow-hard sm:p-9">
-        <p className="eyebrow">Next step</p>
-        <p className="display mt-2 text-[clamp(1.9rem,7vw,3rem)]">{underpaid ? "Now go and get it." : "Know your next number."}</p>
+      <div ref={top} id="raise-plan" className="scroll-mt-6 rounded-box bg-zest p-6 sm:p-9">
+        <p className="display text-[clamp(1.9rem,7vw,3rem)]">{underpaid ? "Now go and get it." : "Know your next number."}</p>
         <p className="mt-3 max-w-xl text-lg">
           Answer six quick questions and get your raise plan: the exact figure to ask for, how strong your case is, when to ask
           and your opening line. Free.
         </p>
-        <button type="button" onClick={start} className="press mt-6 h-14 rounded-xl border-2 border-ink bg-ink px-6 text-base font-semibold text-salt shadow-hard-sm">
+        <button type="button" onClick={start} className="press mt-6 h-14 rounded-ctl bg-ink px-6 text-base font-semibold text-salt hover:bg-brine">
           Build my raise plan
         </button>
         <p className="mt-3 text-sm">Takes a minute. Your answers stay on this device.</p>
@@ -101,19 +102,19 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
     const picked = answers[question.id];
     const canContinue = question.multi || picked !== undefined;
     return (
-      <div ref={top} id="raise-plan" className="scroll-mt-6 rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
+      <div ref={top} id="raise-plan" className="scroll-mt-6 rounded-box border border-ink/15 bg-paper p-6 sm:p-9">
         <div className="flex items-center justify-between gap-4">
-          <p className="eyebrow text-ink-soft">
+          <p className="label text-ink-soft">
             Raise plan · {step + 1} of {QUESTIONS.length}
           </p>
           {step > 0 && (
-            <button type="button" onClick={() => setStep(step - 1)} className="text-sm font-semibold underline underline-offset-4">
+            <button type="button" onClick={() => setStep(step - 1)} className="py-1 text-sm font-semibold underline">
               Back
             </button>
           )}
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-salt-deep" aria-hidden>
-          <div className="h-full rounded-full bg-brine transition-[width] duration-300" style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }} />
+        <div className="mt-3 h-1.5 overflow-hidden rounded-[2px] bg-salt-deep" aria-hidden>
+          <div className="h-full origin-left bg-brine transition-transform duration-300 ease-out" style={{ transform: `scaleX(${(step + 1) / QUESTIONS.length})` }} />
         </div>
         <fieldset className="mt-6">
           <legend className="display text-[clamp(1.6rem,6vw,2.25rem)]">{question.title}</legend>
@@ -136,13 +137,13 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
                       setAnswers({ ...answers, [question.id]: option.value });
                     }
                   }}
-                  className={`flex min-h-14 items-center justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-base font-medium transition-colors ${
-                    selected ? "border-ink bg-brine text-white" : "border-ink/20 bg-salt hover:border-ink"
+                  className={`press flex min-h-14 items-center justify-between gap-3 rounded-ctl border-2 px-4 py-3 text-left text-base font-medium ${
+                    selected ? "border-brine bg-brine text-white" : "border-ink/25 bg-salt hover:border-ink"
                   }`}
                 >
                   {option.label}
-                  <span aria-hidden className={`flex size-6 shrink-0 items-center justify-center rounded-full border-2 text-sm ${selected ? "border-white bg-white text-brine" : "border-ink/30"}`}>
-                    {selected ? "✓" : ""}
+                  <span aria-hidden className={`flex size-6 shrink-0 items-center justify-center rounded-[4px] border-2 ${selected ? "border-white bg-white text-brine" : "border-ink/40"}`}>
+                    {selected && <CheckIcon className="size-4" />}
                   </span>
                 </button>
               );
@@ -153,7 +154,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
           type="button"
           disabled={!canContinue}
           onClick={next}
-          className="press mt-6 h-14 w-full rounded-xl border-2 border-ink bg-ink px-6 text-base font-semibold text-salt shadow-hard-sm disabled:opacity-40"
+          className="press mt-6 h-14 w-full rounded-ctl bg-ink px-6 text-base font-semibold text-salt hover:bg-brine disabled:opacity-40"
         >
           {step === QUESTIONS.length - 1 ? "Show my plan" : question.multi && (answers.changes ?? []).length === 0 ? "None of these" : "Next"}
         </button>
@@ -170,10 +171,10 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
 
   return (
     <div ref={top} id="raise-plan" className="scroll-mt-6 space-y-6">
-      <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
-        <p className="eyebrow text-ink-soft">Your raise plan</p>
+      <div className="rounded-box border border-ink/15 bg-paper p-6 sm:p-9">
+        <h2 className="display text-[clamp(1.75rem,6vw,2.5rem)]">Your raise plan</h2>
 
-        <section className="mt-4">
+        <section className="mt-6">
           <h3 className="display text-2xl">1. Your number</h3>
           {goal.kind === "raise" ? (
             <>
@@ -200,16 +201,16 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
           )}
         </section>
 
-        <section className="mt-8 border-t border-ink/10 pt-6">
+        <section className="mt-8 border-t border-ink/15 pt-6">
           <h3 className="display text-2xl">2. Your case</h3>
-          <p className={`mt-3 inline-block rounded-full border-2 border-ink px-4 py-1 font-display text-lg font-extrabold ${LEVEL_TONE[strong.level]}`}>{strong.level}</p>
+          <p className={`tag mt-3 px-3 py-1 font-display text-lg font-extrabold ${LEVEL_TONE[strong.level]}`}>{strong.level}</p>
           {strong.forYou.length > 0 && (
             <>
-              <p className="eyebrow mt-5 text-ink-soft">On your side</p>
+              <p className="label mt-5">On your side</p>
               <ul className="mt-2 space-y-1.5">
                 {strong.forYou.map((line) => (
-                  <li key={line} className="flex gap-2">
-                    <span aria-hidden className="font-bold text-brine">+</span>
+                  <li key={line} className="flex gap-3">
+                    <span aria-hidden className="mt-[0.55em] size-2 shrink-0 rotate-[18deg] rounded-[1px] bg-brine" />
                     {line}
                   </li>
                 ))}
@@ -218,11 +219,11 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
           )}
           {strong.fixFirst.length > 0 && (
             <>
-              <p className="eyebrow mt-5 text-ink-soft">Sort this first</p>
+              <p className="label mt-5">Sort this first</p>
               <ul className="mt-2 space-y-1.5">
                 {strong.fixFirst.map((line) => (
-                  <li key={line} className="flex gap-2">
-                    <span aria-hidden className="font-bold text-chilli">!</span>
+                  <li key={line} className="flex gap-3">
+                    <span aria-hidden className="mt-[0.55em] size-2 shrink-0 rotate-[18deg] rounded-[1px] bg-chilli" />
                     {line}
                   </li>
                 ))}
@@ -231,14 +232,14 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
           )}
         </section>
 
-        <section className="mt-8 border-t border-ink/10 pt-6">
+        <section className="mt-8 border-t border-ink/15 pt-6">
           <h3 className="display text-2xl">3. When to ask</h3>
           <p className="mt-3 text-lg">{timing(complete)}</p>
         </section>
 
-        <section className="mt-8 border-t border-ink/10 pt-6">
+        <section className="mt-8 border-t border-ink/15 pt-6">
           <h3 className="display text-2xl">4. How to open</h3>
-          <div className="mt-3 space-y-2 rounded-2xl bg-salt p-4 text-lg">
+          <div className="mt-3 space-y-2 rounded-ctl bg-salt p-4 text-lg">
             {openingLines(input).map((line) => (
               <p key={line}>{line}</p>
             ))}
@@ -247,15 +248,15 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
       </div>
 
       {unlocked ? (
-        <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
-          <p className="eyebrow text-ink-soft">The full plan</p>
+        <div className="rounded-box border border-ink/15 bg-paper p-6 sm:p-9">
+          <h2 className="display text-[clamp(1.75rem,6vw,2.5rem)]">The full plan</h2>
           {sections.map((section) => (
-            <section key={section.title} className="mt-6 border-t border-ink/10 pt-6 first-of-type:border-0 first-of-type:pt-0">
+            <section key={section.title} className="mt-6 border-t border-ink/15 pt-6 first-of-type:border-0 first-of-type:pt-0">
               <h3 className="display text-2xl">{section.title}</h3>
               {section.intro && <p className="mt-2 text-ink-soft">{section.intro}</p>}
               <ul className="mt-3 space-y-3 text-lg">
                 {section.lines.map((line) => (
-                  <li key={line} className={line.startsWith('"') ? "rounded-2xl bg-salt p-4" : ""}>
+                  <li key={line} className={line.startsWith('"') ? "rounded-ctl bg-salt p-4" : ""}>
                     {line}
                   </li>
                 ))}
@@ -265,18 +266,15 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
           <p className="mt-8 text-sm text-ink-soft">General guidance, not legal or financial advice. Salty can&apos;t promise a raise; it can make sure you ask well.</p>
         </div>
       ) : (
-        <div className="rounded-3xl border-2 border-ink bg-ink p-6 text-salt shadow-hard sm:p-9">
-          <p className="eyebrow text-zest">The full plan</p>
-          <p className="display mt-2 text-[clamp(1.75rem,6vw,2.5rem)]">The rest, word for word.</p>
+        <div className="on-dark rounded-box bg-ink p-6 text-salt sm:p-9">
+          <p className="display text-[clamp(1.75rem,6vw,2.5rem)]">The full plan: the rest, word for word.</p>
           <ul className="mt-5 space-y-2.5">
             {sections.map((section) => (
               <li key={section.title} className="flex items-center gap-3">
-                <span aria-hidden className="flex size-7 shrink-0 items-center justify-center rounded-full border border-salt/40 text-sm">
-                  🔒
-                </span>
+                <LockIcon className="size-5 shrink-0 text-salt/60" />
                 <span>
                   <span className="font-semibold">{section.title}</span>
-                  {section.intro && <span className="block text-sm text-salt/60">{section.intro}</span>}
+                  {section.intro && <span className="block text-sm text-salt/70">{section.intro}</span>}
                 </span>
               </li>
             ))}
@@ -289,7 +287,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
                 target="_blank"
                 rel="noopener"
                 onClick={() => track("plan", { action: "checkout", country: country.code })}
-                className="press inline-flex h-14 items-center rounded-xl border-2 border-salt bg-zest px-6 text-base font-semibold text-ink"
+                className="press inline-flex h-14 items-center rounded-ctl bg-zest px-6 text-base font-semibold text-ink hover:bg-white"
               >
                 Unlock the full plan{PRICE ? ` · ${PRICE}` : ""}
               </a>
@@ -306,9 +304,9 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
                   }}
                   autoComplete="off"
                   autoCapitalize="none"
-                  className="h-11 w-40 rounded-lg border-2 border-salt/50 bg-transparent px-3 text-base"
+                  className="h-11 w-40 rounded-ctl border-2 border-salt/60 bg-transparent px-3 text-base"
                 />
-                <button type="submit" className="h-11 rounded-lg border-2 border-salt/50 px-4 text-sm font-semibold hover:bg-salt hover:text-ink">
+                <button type="submit" className="press h-11 rounded-ctl border-2 border-salt/60 px-4 text-sm font-semibold hover:bg-salt hover:text-ink">
                   Unlock
                 </button>
               </form>
@@ -325,7 +323,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
                 interest="raise-plan"
                 context={{ country: country.code, job: job.code, job_title: job.title }}
                 cta="Tell me when it opens"
-                tone="brine"
+                tone="dark"
                 successTitle="You're first in line."
                 successBody="We'll email you the moment the full plan opens."
               />
@@ -333,7 +331,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
           )}
 
           {PREVIEW && (
-            <button type="button" onClick={() => setUnlocked(true)} className="mt-5 text-sm underline underline-offset-4">
+            <button type="button" onClick={() => setUnlocked(true)} className="mt-5 py-1 text-sm underline">
               Preview only: show the full plan as a buyer would see it
             </button>
           )}

@@ -1,5 +1,5 @@
 import { AbsoluteFill, Easing, Interactive, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLOR, display, FONT, SAFE } from "./brand";
+import { COLOR, FONT, RADIUS, SAFE, display } from "./brand";
 
 /** The wordmark: "salty" with the tilted grain of salt as its full stop. */
 export const Logo: React.FC<{ size?: number; color?: string; grain?: string }> = ({ size = 72, color = COLOR.ink, grain = COLOR.brine }) => (
@@ -99,15 +99,13 @@ export const EndCard: React.FC<{ from: number; site: string; source: string }> =
           alignSelf: "flex-start",
           backgroundColor: COLOR.zest,
           color: COLOR.ink,
-          border: `6px solid ${COLOR.ink}`,
-          borderRadius: 999,
-          padding: "18px 44px",
-          boxShadow: `10px 10px 0 ${COLOR.ink}`,
+          borderRadius: RADIUS.ctl,
+          padding: "22px 44px",
         }}
       >
         {site}
       </div>
-      <div style={{ fontFamily: FONT.mono, fontSize: 30, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 90, opacity: 0.8, lineHeight: 1.4 }}>{source}</div>
+      <div style={{ fontSize: 34, marginTop: 90, opacity: 0.85, lineHeight: 1.35 }}>{source}</div>
     </Interactive.Div>
   );
 };

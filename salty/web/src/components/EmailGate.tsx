@@ -5,6 +5,8 @@ import { markInterrupted } from "@/lib/funnel";
 import { remember } from "@/lib/signup";
 import { track } from "@/lib/track";
 import { EmailForm } from "./EmailForm";
+import { CloseIcon } from "./icons";
+import { lockScroll } from "./SmoothScroll";
 import { Logo } from "./Logo";
 
 const KEY = "salty.gate";
@@ -54,11 +56,10 @@ export function EmailGate() {
       if (event.key === "Escape") close("dismissed");
     };
     document.addEventListener("keydown", onKey);
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    lockScroll(true);
     return () => {
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previous;
+      lockScroll(false);
     };
   }, [open, close]);
 
@@ -67,15 +68,15 @@ export function EmailGate() {
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-labelledby="gate-title">
       <button type="button" aria-label="Close" tabIndex={-1} onClick={() => close("dismissed")} className="absolute inset-0 cursor-default bg-ink/60" />
-      <div className="relative w-full max-w-md animate-rise rounded-t-3xl border-2 border-ink bg-salt p-6 shadow-hard sm:rounded-3xl sm:p-8">
+      <div data-lenis-prevent className="relative w-full max-w-md animate-rise rounded-t-box bg-salt p-6 shadow-float sm:rounded-box sm:p-8">
         <button
           ref={closeButton}
           type="button"
           onClick={() => close("dismissed")}
           aria-label="Close"
-          className="absolute top-3 right-3 flex size-10 items-center justify-center rounded-full border-2 border-ink bg-white text-xl leading-none font-semibold hover:bg-ink hover:text-salt"
+          className="press absolute top-3 right-3 flex size-11 items-center justify-center rounded-ctl hover:bg-ink hover:text-salt"
         >
-          <span aria-hidden>×</span>
+          <CloseIcon />
         </button>
         <Logo className="text-[1.4rem]" />
         <h2 id="gate-title" className="display mt-4 text-[clamp(2rem,9vw,2.75rem)]">
@@ -93,7 +94,7 @@ export function EmailGate() {
             onDone={() => remember.set(KEY, "joined")}
           />
         </div>
-        <button type="button" onClick={() => close("dismissed")} className="mt-2 w-full rounded-xl py-3 text-center font-semibold underline underline-offset-4">
+        <button type="button" onClick={() => close("dismissed")} className="mt-2 w-full rounded-ctl py-3 text-center font-semibold underline">
           No thanks, just check my pay
         </button>
       </div>

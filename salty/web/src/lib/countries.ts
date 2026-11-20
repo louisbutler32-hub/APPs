@@ -6,7 +6,6 @@ export type Country = {
   name: string;
   /** Used in sentences: "in the UK", "in Australia". */
   inName: string;
-  flag: string;
   locale: string;
   currency: string;
   /** Typical full-time hours per week, used only to turn an hourly rate into a yearly figure. */
@@ -30,20 +29,20 @@ export type Country = {
 const isLive = (code: CountryCode) => (liveCountries as string[]).includes(code);
 
 export const COUNTRIES: Record<CountryCode, Country> = {
-  uk: { code: "uk", name: "United Kingdom", inName: "the UK", flag: "🇬🇧", locale: "en-GB", currency: "GBP", fullTimeHours: 37.5, examplePay: 32000,
+  uk: { code: "uk", name: "United Kingdom", inName: "the UK", locale: "en-GB", currency: "GBP", fullTimeHours: 37.5, examplePay: 32000,
     measure: "yearly pay before tax for full-time employees who have been in the job at least a year",
     publisher: "Office for National Statistics", live: isLive("uk") },
-  us: { code: "us", name: "United States", inName: "the US", flag: "🇺🇸", locale: "en-US", currency: "USD", fullTimeHours: 40, examplePay: 55000,
+  us: { code: "us", name: "United States", inName: "the US", locale: "en-US", currency: "USD", fullTimeHours: 40, examplePay: 55000,
     measure: "yearly wages before tax for employees, with hourly pay counted as a full-time, year-round wage",
     publisher: "Bureau of Labor Statistics", live: isLive("us") },
-  au: { code: "au", name: "Australia", inName: "Australia", flag: "🇦🇺", locale: "en-AU", currency: "AUD", fullTimeHours: 38, examplePay: 80000,
+  au: { code: "au", name: "Australia", inName: "Australia", locale: "en-AU", currency: "AUD", fullTimeHours: 38, examplePay: 80000,
     measure: "yearly salary or wages before tax, taken from tax returns, for everyone in the job whatever their hours",
     publisher: "Australian Taxation Office",
     caveat: "Australia's figures include part-time and casual workers. If you work full-time, you will rank higher here than you would against full-timers only.",
     // Held back: against this all-hours data an ordinary full-time wage ranks near the top
     // (a full-time barista came out above 97% of baristas), which would mislead.
     live: isLive("au") },
-  nz: { code: "nz", name: "New Zealand", inName: "New Zealand", flag: "🇳🇿", locale: "en-NZ", currency: "NZD", fullTimeHours: 40, examplePay: 70000,
+  nz: { code: "nz", name: "New Zealand", inName: "New Zealand", locale: "en-NZ", currency: "NZD", fullTimeHours: 40, examplePay: 70000,
     measure: "pay before tax",
     publisher: "Stats NZ",
     // Held back: the only openly downloadable figures are 8 broad groups, hourly, from 2019.

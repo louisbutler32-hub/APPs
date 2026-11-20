@@ -34,11 +34,11 @@ npm run search-check   # prints search matches for common job titles
 7. **Value before the ask.** Free tools give a real answer first; payment and email asks come after it, and every prompt can be closed.
 3. **Say what the data cannot do.** If a source has a weakness a user would care about (for example, it mixes part-time workers in), it goes next to the result as a `caveat` in `web/src/lib/countries.ts`, not in small print.
 4. **Respect the sources.** Do not disguise automated downloads as a browser, and do not work around a site that refuses them. The United States pipeline reads a hand-downloaded file for this reason.
-5. **Brand.** Copy and visuals follow `salty/docs/brand.md`: plain words ("the middle", not "median"), the five verdict names, the fixed colour palette.
+5. **Brand.** Copy and visuals follow `salty/docs/brand.md`: plain words ("the middle", not "median"), the five verdict names, the fixed colour palette, one typeface, flat colour, small square corners, and very little movement. Run the `design-check` skill before shipping a change to how the site looks.
 6. **Test a new or refreshed country like a user would**: enter an ordinary full-time wage for three common jobs. An ordinary wage scoring "Top shelf" means the comparison group is wrong.
 
 ### Git
 
 Work on a branch and open a pull request; do not push to `main` directly. Checks in `.github/workflows/ci.yml` must pass. Generated files (`web/src/data/pay`, `web/public/data`, `web/out`) and raw downloads (`data/pipelines/*/raw`) are not committed.
 
-Repo skills in `.claude/skills`: `refresh-pay-data` and `add-country`.
+Repo skills in `.claude/skills`: `refresh-pay-data`, `add-country` and `design-check`.

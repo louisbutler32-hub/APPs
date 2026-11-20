@@ -33,7 +33,7 @@ export function PreviewGuard() {
   }, []);
   if (!shown) return null;
   return (
-    <p role="status" className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm rounded-xl border-2 border-ink bg-zest px-4 py-3 text-center text-sm font-semibold shadow-hard-sm">
+    <p role="status" className="fixed inset-x-4 bottom-4 z-50 mx-auto max-w-sm rounded-ctl bg-zest px-4 py-3 text-center text-sm font-semibold shadow-float">
       This preview is the home page only. Job pages work on the full site.
     </p>
   );

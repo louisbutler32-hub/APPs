@@ -1,22 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { Place } from "@/lib/world";
 import type { Estimate } from "@/lib/estimate-shared";
 import { RESULT_ID, setFunnel } from "@/lib/funnel";
 import { money, moneyShort } from "@/lib/pay/format";
 import type { Job } from "@/lib/pay/types";
-import { verdictFor, type VerdictId } from "@/lib/pay/verdict";
+import { verdictFor } from "@/lib/pay/verdict";
+import { useReveal } from "@/lib/reveal";
 import { RaisePlan } from "./RaisePlan";
+import { Scale, VERDICT_TONE } from "./Scale";
 import { Shaker } from "./Shaker";
-
-const TONE: Record<VerdictId, string> = {
-  "extra-salty": "bg-chilli text-ink",
-  salty: "bg-amber text-ink",
-  fair: "bg-white text-ink",
-  seasoned: "bg-brine text-white",
-  "top-shelf": "bg-zest text-ink",
-};
 
 /** What to say about how far to trust it, which depends on whether anything was looked up. */
 const CONFIDENCE = {
@@ -61,12 +55,8 @@ export function EstimateResult({ country, estimate, pay }: Props) {
   const spot = place(estimate, pay);
   const verdict = verdictFor(spot.position);
   const gap = pay - estimate.typical;
-  const [shown, setShown] = useState(50);
-  const target = barPosition(estimate, pay);
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setShown(target));
-    return () => cancelAnimationFrame(frame);
-  }, [target]);
+  const root = useRef<HTMLDivElement>(null);
+  useReveal(root);
 
   const underpaid = verdict.shakers >= 2;
   useEffect(() => {
@@ -88,10 +78,10 @@ export function EstimateResult({ country, estimate, pay }: Props) {
   };
 
   return (
-    <div id={RESULT_ID} className="animate-rise">
-      <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
+    <div id={RESULT_ID} ref={root}>
+      <div className="rounded-box border border-ink/15 bg-paper p-6 sm:p-9">
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`inline-flex items-center gap-2 rounded-full border-2 border-ink px-4 py-1.5 font-display text-lg font-extrabold tracking-tight ${TONE[verdict.id]}`}>
+          <span className={`tag px-3 py-1 font-display text-lg font-extrabold tracking-tight ${VERDICT_TONE[verdict.id]}`}>
             {verdict.label}
             {verdict.shakers > 0 && (
               <span className="flex gap-0.5">
@@ -101,7 +91,7 @@ export function EstimateResult({ country, estimate, pay }: Props) {
               </span>
             )}
           </span>
-          <span className="eyebrow rounded-full border-2 border-ink bg-ink px-2.5 py-1 text-salt">AI estimate</span>
+          <span className="tag bg-ink text-salt">AI estimate</span>
         </div>
 
         <p className="mt-6 text-lg text-ink-soft">This job usually pays about</p>
@@ -109,37 +99,21 @@ export function EstimateResult({ country, estimate, pay }: Props) {
         <p className="display mt-3 max-w-xl text-[clamp(1.5rem,5vw,2.25rem)]">You&apos;re {spot.words}.</p>
         <p className="mt-2 text-ink-soft">{estimate.title}</p>
 
-        <div className="mt-8">
-          <div className="relative h-24">
-            <div className="absolute top-0 -translate-x-1/2 transition-[left] duration-700 ease-out" style={{ left: `${shown}%` }}>
-              <div className="rounded-md border-2 border-ink bg-ink px-2 py-0.5 text-xs font-semibold text-salt">You</div>
-              <div className="mx-auto h-5 w-0.5 bg-ink" />
-            </div>
-            {/* A dashed outline rather than a solid bar: this is a rough range, not measured data. */}
-            <div className="absolute inset-x-0 top-[46px] h-4 overflow-hidden rounded-full border-2 border-dashed border-ink bg-white">
-              <div className="h-full bg-gradient-to-r from-chilli via-amber to-zest opacity-60" />
-            </div>
-            {(
-              [
-                [20, estimate.low, false],
-                [50, estimate.typical, true],
-                [80, estimate.high, false],
-              ] as const
-            ).map(([left, value, main]) => (
-              <div key={left} className="absolute top-[46px] -translate-x-1/2" style={{ left: `${left}%` }}>
-                <div className={`mx-auto w-0.5 bg-ink ${main ? "h-6" : "h-4"}`} />
-                <div className={`mt-1 text-center font-mono text-[0.7rem] leading-tight ${main ? "font-semibold text-ink" : "text-ink-soft"}`}>{moneyShort(country, value)}</div>
-              </div>
-            ))}
-          </div>
-          <div className="flex justify-between font-mono text-[0.68rem] tracking-wide text-ink-soft uppercase">
-            <span>Lower end</span>
-            <span>Typical</span>
-            <span>Upper end</span>
-          </div>
-        </div>
+        {/* A dashed outline rather than a solid bar: this is a rough range, not measured data. */}
+        <Scale
+          className="mt-8"
+          place={barPosition(estimate, pay)}
+          points={[
+            { at: 20, label: moneyShort(country, estimate.low) },
+            { at: 50, label: moneyShort(country, estimate.typical), main: true },
+            { at: 80, label: moneyShort(country, estimate.high) },
+          ]}
+          ends={["Lower end", "Typical", "Upper end"]}
+          tone={verdict.id}
+          rough
+        />
 
-        <p className="mt-8 rounded-2xl bg-salt p-4 text-lg">
+        <p className="mt-8 rounded-ctl bg-salt p-4 text-lg">
           {Math.abs(gap) < estimate.typical * 0.03 ? (
             <>That is right around the typical figure.</>
           ) : (
@@ -150,7 +124,7 @@ export function EstimateResult({ country, estimate, pay }: Props) {
           )}
         </p>
 
-        <div className="mt-5 rounded-2xl border-2 border-dashed border-ink/40 p-4 text-sm text-ink-soft">
+        <div className="mt-5 rounded-ctl border-2 border-dashed border-ink/40 p-4 text-sm text-ink-soft">
           <p className="font-semibold text-ink">This is a rough estimate, not official figures.</p>
           <p className="mt-1">
             {estimate.method === "web-search"
@@ -164,7 +138,7 @@ export function EstimateResult({ country, estimate, pay }: Props) {
             <ul className="mt-2 space-y-1">
               {estimate.sources.map((source) => (
                 <li key={source.url}>
-                  <a href={source.url} target="_blank" rel="noopener nofollow" className="font-medium text-brine underline underline-offset-4">
+                  <a href={source.url} target="_blank" rel="noopener nofollow" className="font-semibold text-brine underline">
                     {source.title}
                   </a>
                 </li>

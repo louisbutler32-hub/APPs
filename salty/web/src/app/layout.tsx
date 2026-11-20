@@ -4,9 +4,12 @@ import { Analytics } from "@/components/Analytics";
 import { EmailGate } from "@/components/EmailGate";
 import { ExitPrompt, NextStepBar } from "@/components/Prompts";
 import { PreviewGuard } from "@/components/PreviewGuard";
+import { SmoothScroll } from "@/components/SmoothScroll";
 import { brand } from "@/lib/brand";
 import "./globals.css";
 
+// One typeface for the whole site: Bricolage Grotesque, a variable font whose optical-size axis
+// redraws it between small text and big headlines.
 const bricolage = localFont({
   src: "./fonts/bricolage.woff2",
   variable: "--font-bricolage",
@@ -14,20 +17,6 @@ const bricolage = localFont({
   display: "swap",
   // Lets CSS font-stretch drive the width axis (75% to 100%).
   declarations: [{ prop: "font-stretch", value: "75% 100%" }],
-});
-
-const geist = localFont({
-  src: "./fonts/geist.woff2",
-  variable: "--font-geist",
-  weight: "100 900",
-  display: "swap",
-});
-
-const geistMono = localFont({
-  src: "./fonts/geist-mono.woff2",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -56,9 +45,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${geist.variable} ${geistMono.variable} antialiased`}>
+    <html lang="en" className={`${bricolage.variable} antialiased`}>
       <body className="min-h-dvh overflow-x-clip">
+        {/* The headline waits for its entrance script; without scripts it must simply be there. */}
+        <noscript>
+          <style>{".split-parent{visibility:visible!important}"}</style>
+        </noscript>
         {children}
+        <SmoothScroll />
         <EmailGate />
         <NextStepBar />
         <ExitPrompt />

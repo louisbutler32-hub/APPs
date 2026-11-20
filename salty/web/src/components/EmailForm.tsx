@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useState } from "react";
 import { remember, submitSignup, type SignupResult } from "@/lib/signup";
 import { track } from "@/lib/track";
@@ -10,7 +11,8 @@ type Props = {
   /** Extra context to send. Never pay. */
   context?: Record<string, string>;
   cta: string;
-  tone?: "light" | "brine";
+  /** "dark" when the form sits on brine or ink, where the button turns zest. */
+  tone?: "light" | "dark";
   note?: string;
   successTitle?: string;
   successBody?: string;
@@ -33,11 +35,11 @@ export function EmailForm({
   const [email, setEmail] = useState("");
   const [trap, setTrap] = useState("");
   const [status, setStatus] = useState<Status>("idle");
-  const onBrine = tone === "brine";
+  const onDark = tone === "dark";
 
   if (status === "ok") {
     return (
-      <div className="animate-pop rounded-2xl border-2 border-ink bg-zest p-5 text-ink shadow-hard-sm">
+      <div className="animate-settle rounded-ctl bg-zest p-5 text-ink">
         <p className="display text-2xl">{successTitle}</p>
         <p className="mt-2 text-sm">{successBody}</p>
       </div>
@@ -72,7 +74,7 @@ export function EmailForm({
           placeholder="you@email.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="h-14 min-w-0 flex-1 rounded-xl border-2 border-ink bg-white px-4 text-base text-ink placeholder:text-ink-soft/60"
+          className={`field h-14 min-w-0 shrink-0 px-4 text-base sm:flex-1 ${onDark ? "border-transparent" : ""}`}
         />
         {/* Honeypot: hidden from people, tempting to bots. */}
         <input
@@ -88,19 +90,27 @@ export function EmailForm({
         <button
           type="submit"
           disabled={status === "sending"}
-          className={`press h-14 shrink-0 rounded-xl border-2 border-ink px-6 text-base font-semibold shadow-hard-sm disabled:opacity-60 ${
-            onBrine ? "bg-zest text-ink" : "bg-brine text-white"
+          className={`press h-14 shrink-0 rounded-ctl px-6 text-base font-semibold disabled:opacity-60 ${
+            onDark ? "bg-zest text-ink hover:bg-white" : "bg-brine text-white hover:bg-brine-deep"
           }`}
         >
           {status === "sending" ? "One second…" : cta}
         </button>
       </div>
-      <p role="status" className={`text-sm ${onBrine ? "text-white/80" : "text-ink-soft"}`}>
+      <p role="status" className={`text-sm ${onDark ? "text-white/80" : "text-ink-soft"}`}>
         {status === "error"
           ? "That didn't go through. Check your connection and try again."
           : status === "off"
             ? "Sign-ups aren't switched on yet, so this wasn't saved."
-            : note}
+            : note}{" "}
+        <Link href="/privacy" prefetch={false} className="underline">
+          Privacy
+        </Link>{" "}
+        and{" "}
+        <Link href="/terms" prefetch={false} className="underline">
+          terms
+        </Link>
+        .
       </p>
     </form>
   );

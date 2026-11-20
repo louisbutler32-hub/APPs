@@ -11,17 +11,20 @@ export const COLOR = {
   amber: "#ffad1f",
   zest: "#d9f24b",
   white: "#ffffff",
+  /** The lighter sheet that panels sit on. Never pure white. */
+  paper: "#fbf9f4",
+  saltDeep: "#e8e3d6",
 } as const;
 
-export const FONT = { display: "Bricolage", body: "Geist", mono: "GeistMono" } as const;
+// One typeface for everything, as on the site.
+export const FONT = { display: "Bricolage", body: "Bricolage" } as const;
 
-// The same font files as the site, so a clip and the page it sends people to look like one brand.
-// loadFont holds each frame back until its font is ready, so nothing here needs to be awaited.
-void Promise.all([
-  loadFont({ family: FONT.display, url: staticFile("fonts/bricolage.woff2"), weight: "200 800", stretch: "75% 100%" }),
-  loadFont({ family: FONT.body, url: staticFile("fonts/geist.woff2"), weight: "100 900" }),
-  loadFont({ family: FONT.mono, url: staticFile("fonts/geist-mono.woff2"), weight: "100 900" }),
-]);
+// The same font file as the site, so a clip and the page it sends people to look like one brand.
+// loadFont holds each frame back until the font is ready, so nothing here needs to be awaited.
+void loadFont({ family: FONT.display, url: staticFile("fonts/bricolage.woff2"), weight: "200 800", stretch: "75% 100%" });
+
+/** Corners are cut small and square, like a grain of salt. */
+export const RADIUS = { ctl: 12, box: 24 } as const;
 
 /** Headline type: heavy and slightly condensed, as on the site. */
 export const display = { fontFamily: FONT.display, fontWeight: 800, fontStretch: "88%", letterSpacing: "-0.015em", lineHeight: 0.95 } as const;

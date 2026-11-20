@@ -22,6 +22,7 @@ What stands between the repo and a live test. Items marked **You** need an accou
 - [ ] Optional: create a free Umami site and set `NEXT_PUBLIC_UMAMI_ID` to count checks, shares and sign-ups. Without it there are no numbers for the two-week test.
 - [ ] Set the founder links (`NEXT_PUBLIC_FOUNDER_*`) so the "built in public" block appears.
 - [ ] Set `NEXT_PUBLIC_CONTACT_EMAIL`, then read the privacy page on the live site. It is a plain-language draft: **have it checked** against the rules where you launch, since the site collects email addresses.
+- [ ] Read the terms page (`/terms`) the same way. It is a plain-language draft and leaves two things for you to decide and add: which country's law applies, and your refund rule for the paid plan. **Have it checked** before you sell anything.
 
 ## Data
 

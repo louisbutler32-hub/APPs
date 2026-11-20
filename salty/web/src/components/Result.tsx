@@ -6,23 +6,17 @@ import { brand } from "@/lib/brand";
 import { money, moneyShort, percent, shortPeriod } from "@/lib/pay/format";
 import { gapToMedian, position as positionOf, quantilePoints, rank, type Ranking } from "@/lib/pay/percentile";
 import type { CountryData, Job } from "@/lib/pay/types";
-import { verdictFor, type Verdict, type VerdictId } from "@/lib/pay/verdict";
+import { verdictFor, type Verdict } from "@/lib/pay/verdict";
 import { canvasToBlob, drawShareCard, type ShareCardContent } from "@/lib/share-card";
 import { track } from "@/lib/track";
 import { RESULT_ID, setFunnel } from "@/lib/funnel";
 import { target } from "@/lib/raise-plan";
+import { useReveal } from "@/lib/reveal";
 import { EmailForm } from "./EmailForm";
 import { RaisePlan } from "./RaisePlan";
 import { Recommended } from "./Recommended";
+import { RevealGrains, Scale, VERDICT_TONE } from "./Scale";
 import { Shaker } from "./Shaker";
-
-const TONE: Record<VerdictId, string> = {
-  "extra-salty": "bg-chilli text-ink",
-  salty: "bg-amber text-ink",
-  fair: "bg-white text-ink",
-  seasoned: "bg-brine text-white",
-  "top-shelf": "bg-zest text-ink",
-};
 
 type Words = { figure: string; lead: string; tail: string; mine: string; approx: boolean };
 
@@ -71,73 +65,6 @@ function describe(ranking: Ranking, offer: boolean): Words | null {
   }
 }
 
-/** Counts a percentage figure up from zero. Figures that are words are shown as they are. */
-function useCountUp(figure: string): string {
-  const match = /^(\d+)%$/.exec(figure);
-  const target = match ? Number(match[1]) : null;
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (target === null) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const frame = requestAnimationFrame(() => setValue(target));
-      return () => cancelAnimationFrame(frame);
-    }
-    const start = performance.now();
-    let frame = 0;
-    const step = (now: number) => {
-      const t = Math.min(1, (now - start) / 900);
-      setValue(Math.round(target * (1 - Math.pow(1 - t, 3))));
-      if (t < 1) frame = requestAnimationFrame(step);
-    };
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
-  }, [target]);
-  return target === null ? figure : `${value}%`;
-}
-
-function Distribution({ job, country, place }: { job: Job; country: Country; place: number }) {
-  const points = quantilePoints(job);
-  const labelled = points.filter((point) => [10, 25, 50, 75, 90].includes(point.q));
-  const [shown, setShown] = useState(50);
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setShown(place));
-    return () => cancelAnimationFrame(frame);
-  }, [place]);
-
-  return (
-    <div className="mt-8">
-      <div className="relative h-24">
-        {/* You */}
-        <div
-          className="absolute top-0 -translate-x-1/2 transition-[left] duration-700 ease-out"
-          style={{ left: `${Math.min(97, Math.max(3, shown))}%` }}
-        >
-          <div className="rounded-md border-2 border-ink bg-ink px-2 py-0.5 text-xs font-semibold text-salt">You</div>
-          <div className="mx-auto h-5 w-0.5 bg-ink" />
-        </div>
-        {/* Track */}
-        <div className="absolute inset-x-0 top-[46px] h-4 overflow-hidden rounded-full border-2 border-ink bg-white">
-          <div className="h-full bg-gradient-to-r from-chilli via-amber to-zest opacity-90" />
-        </div>
-        {/* Published pay points */}
-        {labelled.map((point) => (
-          <div key={point.q} className="absolute top-[46px] -translate-x-1/2" style={{ left: `${point.q}%` }}>
-            <div className={`mx-auto w-0.5 bg-ink ${point.q === 50 ? "h-6" : "h-4"}`} />
-            <div className={`mt-1 text-center font-mono text-[0.7rem] leading-tight ${point.q === 50 ? "font-semibold text-ink" : "text-ink-soft"}`}>
-              {moneyShort(country, point.value)}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="flex justify-between font-mono text-[0.68rem] tracking-wide text-ink-soft uppercase">
-        <span>Lowest paid</span>
-        <span>Middle</span>
-        <span>Highest paid</span>
-      </div>
-    </div>
-  );
-}
-
 type Props = { mode: "pay" | "offer"; country: Country; data: Pick<CountryData, "period" | "source">; job: Job; pay: number };
 
 export function Result({ mode, country, data, job, pay }: Props) {
@@ -145,7 +72,9 @@ export function Result({ mode, country, data, job, pay }: Props) {
   const ranking = useMemo(() => rank(job, pay), [job, pay]);
   const place = positionOf(job, pay, ranking);
   const words = describe(ranking, offer);
-  const figure = useCountUp(words?.figure ?? "");
+  const figure = words?.figure ?? "";
+  const root = useRef<HTMLDivElement>(null);
+  useReveal(root);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shareState, setShareState] = useState<"idle" | "working" | "copied">("idle");
   const [cardUrl, setCardUrl] = useState<string | null>(null);
@@ -160,7 +89,7 @@ export function Result({ mode, country, data, job, pay }: Props) {
 
   if (!words || place === null) {
     return (
-      <div className="rounded-2xl border-2 border-ink bg-white p-6">
+      <div className="rounded-box border border-ink/15 bg-paper p-6">
         <p className="display text-2xl">We can&apos;t rank that one yet.</p>
         <p className="mt-2 text-ink-soft">The official figures for this job don&apos;t include enough detail. Try a closely related job.</p>
       </div>
@@ -222,10 +151,12 @@ export function Result({ mode, country, data, job, pay }: Props) {
   }
 
   return (
-    <div id={RESULT_ID} className="animate-rise">
-      <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
+    <div id={RESULT_ID} ref={root}>
+      <div className="relative rounded-box border border-ink/15 bg-paper p-6 sm:p-9">
+        <RevealGrains />
+        <div className="relative">
         <div className="flex flex-wrap items-center gap-3">
-          <span className={`inline-flex items-center gap-2 rounded-full border-2 border-ink px-4 py-1.5 font-display text-lg font-extrabold tracking-tight ${TONE[verdict.id]}`}>
+          <span className={`tag px-3 py-1 font-display text-lg font-extrabold tracking-tight ${VERDICT_TONE[verdict.id]}`}>
             {verdict.label}
             {verdict.shakers > 0 && (
               <span className="flex gap-0.5">
@@ -235,20 +166,35 @@ export function Result({ mode, country, data, job, pay }: Props) {
               </span>
             )}
           </span>
-          {words.approx && <span className="eyebrow rounded-full border border-ink/30 px-2.5 py-1 text-ink-soft">Estimate</span>}
+          {words.approx && <span className="tag border border-ink/40 text-ink-soft">Estimate</span>}
         </div>
 
-        <p className="mt-6 text-lg text-ink-soft">{words.lead}</p>
-        <p className={`figure ${/^\d/.test(figure) ? "text-[clamp(5rem,26vw,10rem)]" : "text-[clamp(3.25rem,15vw,6.5rem)]"}`} aria-live="polite">
-          {figure}
+        {/* Read out once, as one sentence. The figure below counts up for the eye only. */}
+        <p className="sr-only" role="status">
+          {words.lead} {figure} {words.tail}
         </p>
-        <p className="display mt-3 max-w-xl text-[clamp(1.5rem,5vw,2.25rem)]">{words.tail}</p>
+        <div aria-hidden>
+          <p className="mt-6 text-lg text-ink-soft">{words.lead}</p>
+          <p data-count className={`figure ${/^\d/.test(figure) ? "text-[clamp(5rem,26vw,10rem)]" : "text-[clamp(3.25rem,15vw,6.5rem)]"}`}>
+            {figure}
+          </p>
+          <p className="display mt-3 max-w-xl text-[clamp(1.5rem,5vw,2.25rem)]">{words.tail}</p>
+        </div>
         <p className="mt-2 text-ink-soft">{job.title}</p>
 
-        <Distribution job={job} country={country} place={place} />
+        <Scale
+          className="mt-8"
+          place={place}
+          points={quantilePoints(job)
+            .filter((point) => [10, 25, 50, 75, 90].includes(point.q))
+            .map((point) => ({ at: point.q, label: moneyShort(country, point.value), main: point.q === 50 }))}
+          ends={["Lowest paid", "Middle", "Highest paid"]}
+          tone={verdict.id}
+          marker={offer ? "This offer" : "You"}
+        />
 
         {gap && (
-          <p className="mt-8 rounded-2xl bg-salt p-4 text-lg">
+          <p className="mt-8 rounded-ctl bg-salt p-4 text-lg">
             {Math.abs(gap.fraction) < 0.005 ? (
               <>You&apos;re right on the middle figure of <strong>{money(country, job.p50 as number)}</strong> a year.</>
             ) : (
@@ -261,7 +207,7 @@ export function Result({ mode, country, data, job, pay }: Props) {
         )}
 
         <p className="mt-4 text-lg">{offer ? verdict.offerLine : verdict.line}</p>
-        {country.caveat && <p className="mt-3 rounded-xl border-2 border-dashed border-ink/30 p-3 text-sm text-ink-soft">{country.caveat}</p>}
+        {country.caveat && <p className="mt-3 rounded-ctl border-2 border-dashed border-ink/40 p-3 text-sm text-ink-soft">{country.caveat}</p>}
 
         {!offer && (
           <>
@@ -270,28 +216,28 @@ export function Result({ mode, country, data, job, pay }: Props) {
             type="button"
             onClick={shareImage}
             disabled={shareState === "working"}
-            className="press h-14 rounded-xl border-2 border-ink bg-ink px-6 text-base font-semibold text-salt shadow-hard-sm disabled:opacity-60"
+            className="press h-14 rounded-ctl bg-ink px-6 text-base font-semibold text-salt hover:bg-brine disabled:opacity-60"
           >
             {shareState === "working" ? "Making your card…" : "Share my result"}
           </button>
-          <button type="button" onClick={copyLink} className="press h-14 rounded-xl border-2 border-ink bg-white px-6 text-base font-semibold shadow-hard-sm">
+          <button type="button" onClick={copyLink} className="press h-14 rounded-ctl border-2 border-ink px-6 text-base font-semibold hover:bg-ink hover:text-salt">
             {shareState === "copied" ? "Link copied" : "Copy link for a friend"}
           </button>
         </div>
         <p className="mt-3 text-sm text-ink-soft">The share image shows your rank, never your pay.</p>
         <canvas ref={canvasRef} className="hidden" />
         {cardUrl && (
-          <figure className="mt-5 animate-pop">
+          <figure className="mt-5 animate-settle">
             {/* eslint-disable-next-line @next/next/no-img-element -- a locally generated image, nothing to optimise */}
-            <img src={cardUrl} alt={`Share image: ${words.figure} ${words.mine}`} className="w-full max-w-xs rounded-2xl border-2 border-ink shadow-hard-sm" />
+            <img src={cardUrl} alt={`Share image: ${words.figure} ${words.mine}`} className="w-full max-w-xs rounded-ctl border border-ink/15" />
             <figcaption className="mt-2 text-sm text-ink-soft">Your share image. Press and hold (or right-click) to save it.</figcaption>
           </figure>
         )}
           </>
         )}
 
-        <details className="mt-6 border-t border-ink/10 pt-4 text-sm text-ink-soft">
-          <summary className="cursor-pointer font-medium text-ink">How we worked this out</summary>
+        <details className="mt-6 border-t border-ink/15 pt-4 text-sm text-ink-soft">
+          <summary className="cursor-pointer py-1 font-semibold text-ink">How we worked this out</summary>
           <div className="mt-3 space-y-2">
             <p>
               We compared your pay with official figures from the {country.publisher}, {shortPeriod(data.period)}. The figures are{" "}
@@ -311,6 +257,7 @@ export function Result({ mode, country, data, job, pay }: Props) {
             <p>{data.source.attribution}</p>
           </div>
         </details>
+        </div>
       </div>
 
       <div className="mt-8">
@@ -325,23 +272,22 @@ export function Result({ mode, country, data, job, pay }: Props) {
 function OfferCounter({ country, job, offer }: { country: Country; job: Job; offer: number }) {
   const goal = target(job, offer);
   return (
-    <div className="rounded-3xl border-2 border-ink bg-zest p-6 shadow-hard sm:p-9">
-      <p className="eyebrow">Next step</p>
+    <div className="rounded-box bg-zest p-6 sm:p-9">
       {goal.kind === "raise" ? (
         <>
-          <p className="display mt-2 text-[clamp(1.9rem,7vw,3rem)]">Counter at {money(country, goal.opening)}.</p>
+          <p className="display text-[clamp(1.9rem,7vw,3rem)]">Counter at {money(country, goal.opening)}.</p>
           <p className="mt-3 max-w-xl text-lg">
             Aim to land on {money(country, goal.target)}: {goal.why}. Many offers have room in them, and one polite ask is a normal part of
             being hired.
           </p>
-          <p className="mt-4 rounded-2xl border-2 border-ink bg-white p-4 text-lg">
+          <p className="mt-4 rounded-ctl bg-paper p-4 text-lg">
             &ldquo;Thank you, I&apos;m really pleased to get the offer. Looking at the official figures for this role, I was expecting
             something closer to {money(country, goal.opening)}. Is there room to move?&rdquo;
           </p>
         </>
       ) : (
         <>
-          <p className="display mt-2 text-[clamp(1.9rem,7vw,3rem)]">Take a good look at this one.</p>
+          <p className="display text-[clamp(1.9rem,7vw,3rem)]">Take a good look at this one.</p>
           <p className="mt-3 max-w-xl text-lg">
             This offer is already above the highest pay point the official figures publish for the job. Check the hours, the holiday and
             the pension before you say yes, because the money is not where the catch will be.

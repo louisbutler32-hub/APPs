@@ -1,9 +1,12 @@
-/** The wordmark: lowercase "salty" with a single tilted grain of salt as its full stop. */
-export function Logo({ className = "" }: { className?: string }) {
+/**
+ * The wordmark: lowercase "salty" with a single tilted grain of salt as its full stop.
+ * The grain is brine everywhere except on a brine ground, where it turns zest so it can be seen.
+ */
+export function Logo({ className = "", grain = "bg-brine" }: { className?: string; grain?: string }) {
   return (
     <span className={`group/logo display inline-flex items-baseline text-[1.75rem] leading-none ${className}`}>
       salty
-      <span aria-hidden className="ml-[0.07em] inline-block size-[0.22em] rotate-[18deg] rounded-[1px] bg-brine group-hover/logo:animate-wobble" />
+      <span aria-hidden className={`ml-[0.07em] inline-block size-[0.22em] rotate-[18deg] rounded-[1px] group-hover/logo:animate-wobble ${grain}`} />
     </span>
   );
 }

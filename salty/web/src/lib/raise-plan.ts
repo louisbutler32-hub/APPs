@@ -288,13 +288,13 @@ export function fullPlan(input: PlanInput): PlanSection[] {
       title: "When they push back",
       intro: "Five things managers say, and what to say next.",
       lines: [
-        `"There's no budget." → "I understand. Can we agree the figure now and the date it starts? If it can't be this quarter, I'd like the date in writing."`,
-        `"It's not the right time." → "When is? Let's put that date in the diary now, so I know what I'm working towards."`,
+        `"There's no budget." You say: "I understand. Can we agree the figure now and the date it starts? If it can't be this quarter, I'd like the date in writing."`,
+        `"It's not the right time." You say: "When is? Let's put that date in the diary now, so I know what I'm working towards."`,
         official
-          ? `"You're already paid fairly." → "The official figures put the middle at ${middle}. What am I missing?"`
-          : `"You're already paid fairly." → "Everything I can find puts the going rate around ${middle}. What am I missing?"`,
-        `"I can't make an exception." → "I'm not asking for an exception. I'm asking to be paid the going rate for the work I do. What would it take?"`,
-        `"Leave it with me." → "Thank you. When should I expect to hear? I'll put a note in for two weeks today."`,
+          ? `"You're already paid fairly." You say: "The official figures put the middle at ${middle}. What am I missing?"`
+          : `"You're already paid fairly." You say: "Everything I can find puts the going rate around ${middle}. What am I missing?"`,
+        `"I can't make an exception." You say: "I'm not asking for an exception. I'm asking to be paid the going rate for the work I do. What would it take?"`,
+        `"Leave it with me." You say: "Thank you. When should I expect to hear? I'll put a note in for two weeks today."`,
       ],
     },
     {

@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Checker } from "@/components/Checker";
-import { Grains } from "@/components/Grains";
-import { Coming, Founder, HeroIntro, HeroStats, HowItWorks, SiteFooter, SiteHeader, Sources, Sting, Ticker } from "@/components/sections";
+import { HeroTitle } from "@/components/HeroTitle";
+import { Coming, Founder, HeroIntro, officialJobCount, PayTable, SiteFooter, SiteHeader, Sources } from "@/components/sections";
 import { COUNTRIES, isCountryCode } from "@/lib/countries";
-import { AVAILABLE, DATA, popularJobs } from "@/lib/pay/data";
-import { money, shortPeriod } from "@/lib/pay/format";
+import { AVAILABLE } from "@/lib/pay/data";
 
 export function generateStaticParams() {
   return AVAILABLE.map((country) => ({ country }));
@@ -27,61 +25,24 @@ export default async function CountryPage({ params }: PageProps<"/[country]">) {
   const { country: code } = await params;
   if (!isCountryCode(code) || !AVAILABLE.includes(code)) notFound();
   const country = COUNTRIES[code];
-  const data = DATA[code];
-  const popular = popularJobs(code, 24);
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader tone="brine" />
       <main>
-        <section className="relative">
-          <Grains edges className="opacity-30" />
-          <div className="relative mx-auto max-w-6xl px-5 pt-3 pb-16 sm:px-8 sm:pt-14 sm:pb-24">
-            <Checker
-              available={AVAILABLE}
-              country={code}
-              intro={
-                <HeroIntro
-                  eyebrow={`${country.name} · ${country.publisher} figures`}
-                  title={
-                    <>
-                      Are you <Sting>underpaid?</Sting>
-                    </>
-                  }
-                >
-                  <p>
-                    Type your job and your pay. See where you rank against everyone doing the same work in {country.inName}.
-                  </p>
-                  <HeroStats />
-                </HeroIntro>
-              }
-            />
-          </div>
-        </section>
-        <Ticker countries={[code]} />
-
-        <section className="mx-auto max-w-6xl px-5 pt-20 sm:px-8 sm:pt-28">
-          <p className="kicker text-ink-soft">Popular jobs in {country.inName}</p>
-          <h2 className="display mt-3 max-w-2xl text-[clamp(2.25rem,7vw,4rem)]">What the job actually pays.</h2>
-          <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {popular.map((job) => (
-              <li key={job.code}>
-                <Link
-                  href={`/${code}/${job.slug}`}
-                  className="lift flex items-baseline justify-between gap-4 rounded-2xl border-2 border-ink bg-white px-5 py-4 shadow-hard-sm"
-                >
-                  <span className="font-medium">{job.title}</span>
-                  <span className="font-display text-xl font-extrabold tracking-tight text-brine">{money(country, job.p50 as number)}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <p className="mt-5 text-sm text-ink-soft">
-            Middle yearly pay before tax, {shortPeriod(data.period)}. {data.jobs.length.toLocaleString("en")} jobs covered: search above for yours.
-          </p>
-        </section>
-
-        <HowItWorks />
+        <Checker
+          available={AVAILABLE}
+          country={code}
+          intro={
+            <HeroIntro title={<HeroTitle text="Are you underpaid?" />}>
+              <p>
+                Type your job and your pay. See where you rank against everyone doing the same work in {country.inName}, from{" "}
+                {country.publisher} figures for {officialJobCount([code])} jobs.
+              </p>
+            </HeroIntro>
+          }
+        />
+        <PayTable countries={[code]} rows={24} />
         <Coming />
         <Sources />
         <Founder />

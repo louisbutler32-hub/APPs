@@ -10,5 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...AVAILABLE.map((country) => ({ url: `${brand.url}/${country}`, priority: 0.9 })),
     ...AVAILABLE.flatMap((country) => DATA[country].jobs.map((job) => ({ url: `${brand.url}/${country}/${job.slug}`, priority: 0.6 }))),
     { url: `${brand.url}/privacy`, priority: 0.1 },
+    { url: `${brand.url}/terms`, priority: 0.1 },
   ];
 }

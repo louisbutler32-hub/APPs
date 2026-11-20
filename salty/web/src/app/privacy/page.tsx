@@ -10,10 +10,9 @@ export default function Privacy() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-5 py-16 sm:px-8 sm:py-24">
-        <p className="eyebrow text-ink-soft">Privacy</p>
-        <h1 className="display mt-3 text-[clamp(2.5rem,9vw,4.5rem)]">Your pay is your business.</h1>
-        <div className="mt-10 space-y-8 text-lg text-ink-soft [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:text-ink [&_p]:mt-3">
+      <main className="mx-auto max-w-6xl px-5 py-16 sm:px-8 sm:py-24">
+        <h1 className="display max-w-3xl text-[clamp(2.5rem,9vw,4.5rem)]">Privacy: your pay is your business.</h1>
+        <div className="mt-10 max-w-[36rem] space-y-9 text-ink-soft [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-extrabold [&_h2]:tracking-tight [&_h2]:text-ink [&_p]:mt-3">
           <section>
             <h2>What you type stays with you</h2>
             <p>
@@ -51,7 +50,7 @@ export default function Privacy() {
               {brand.contactEmail ? (
                 <>
                   {" "}
-                  by emailing <a className="font-semibold text-brine underline" href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a>.
+                  by emailing <a className="font-semibold text-ink underline" href={`mailto:${brand.contactEmail}`}>{brand.contactEmail}</a>.
                 </>
               ) : (
                 "."

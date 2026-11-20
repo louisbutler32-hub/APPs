@@ -50,59 +50,55 @@ export default async function JobPage({ params }: PageProps<"/[country]/[job]">)
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader tone="brine" />
       <main>
-        <section className="mx-auto max-w-6xl px-5 pt-8 pb-16 sm:px-8 sm:pt-14 sm:pb-24">
           <Checker
             available={AVAILABLE}
             country={code}
             job={job}
             intro={
               <div>
-                <p className="eyebrow text-ink-soft">
-                  <Link href={`/${code}`} className="underline underline-offset-4">
-                    {country.name}
-                  </Link>{" "}
-                  · {shortPeriod(data.period)}
-                </p>
-                <h1 className="display mt-4 text-[clamp(2.4rem,8vw,4.5rem)] text-balance">
-                  {job.title}: <span className="text-brine">what the job pays</span>
-                </h1>
-                <dl className="mt-8 grid gap-3 sm:grid-cols-3">
+                <nav aria-label="Breadcrumb" className="text-sm font-semibold">
+                  <Link href={`/${code}`} className="inline-block py-2 underline">
+                    All jobs in {country.inName}
+                  </Link>
+                </nav>
+                <h1 className="display mt-3 text-[clamp(2.4rem,8vw,4.5rem)]">{job.title}: what the job pays</h1>
+                {/* A ruled table rather than a row of boxes: the figure, then what it means. */}
+                <dl className="mt-8 border-t-2 border-white">
                   {stats.map((stat) => (
-                    <div key={stat.label} className="rounded-2xl border-2 border-ink bg-white p-4">
-                      <dt className="eyebrow text-ink-soft">{stat.label}</dt>
-                      <dd className="mt-2 font-display text-3xl font-extrabold tracking-tight">{stat.value}</dd>
-                      <dd className="mt-1 text-xs text-ink-soft">{stat.note}</dd>
+                    <div key={stat.label} className="grid grid-cols-[1fr_auto] items-baseline gap-x-6 border-b border-white/30 py-3.5">
+                      <dt className="font-semibold">{stat.label}</dt>
+                      <dd className="figure text-3xl">{stat.value}</dd>
+                      <dd className="col-span-2 mt-0.5 text-sm text-white/85">{stat.note}</dd>
                     </div>
                   ))}
                 </dl>
-                <p className="mt-5 max-w-lg text-ink-soft">
-                  Per year, before tax. The figures are {country.measure}, from the {country.publisher}.
+                <p className="mt-5 max-w-lg text-white/90">
+                  Per year, before tax, {shortPeriod(data.period)}. The figures are {country.measure}, from the {country.publisher}.
                   {job.employees ? ` Based on about ${job.employees.toLocaleString("en")} people.` : ""}
                 </p>
-                {country.caveat && <p className="mt-3 max-w-lg text-sm text-ink-soft">{country.caveat}</p>}
+                {country.caveat && <p className="mt-3 max-w-lg text-sm text-white/85">{country.caveat}</p>}
               </div>
             }
           />
-        </section>
 
         {(job.aliases.length > 0 || related.length > 0) && (
-          <section className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 sm:px-8 md:grid-cols-2">
+          <section className="mx-auto grid max-w-6xl gap-x-14 gap-y-10 px-5 py-20 sm:px-8 md:grid-cols-2">
             {job.aliases.length > 0 && (
               <div>
-                <h2 className="display text-2xl">Job titles in this group</h2>
-                <p className="mt-3 text-ink-soft capitalize">{job.aliases.slice(0, 12).join(" · ")}</p>
+                <h2 className="display border-b-2 border-ink pb-3 text-2xl">Job titles in this group</h2>
+                <p className="mt-4 text-ink-soft capitalize">{job.aliases.slice(0, 12).join(", ")}</p>
               </div>
             )}
             {related.length > 0 && (
               <div>
-                <h2 className="display text-2xl">Similar jobs</h2>
-                <ul className="mt-3 space-y-2">
+                <h2 className="display border-b-2 border-ink pb-3 text-2xl">Similar jobs</h2>
+                <ul>
                   {related.map((other) => (
                     <li key={other.code}>
-                      <Link href={`/${code}/${other.slug}`} className="flex justify-between gap-4 border-b border-ink/15 pb-2 hover:text-brine">
-                        <span>{other.title}</span>
+                      <Link href={`/${code}/${other.slug}`} className="group flex items-baseline justify-between gap-4 border-b border-ink/15 py-3.5">
+                        <span className="underline-offset-4 group-hover:underline">{other.title}</span>
                         <span className="font-semibold tabular-nums">{money(country, other.p50 as number)}</span>
                       </Link>
                     </li>

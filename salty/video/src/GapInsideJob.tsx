@@ -1,6 +1,6 @@
 import { Easing, Interactive, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { z } from "zod";
-import { COLOR, display, FONT, money, SAFE } from "./brand";
+import { COLOR, display, money, SAFE } from "./brand";
 import { EndCard, Stage } from "./parts";
 
 /**
@@ -39,7 +39,7 @@ export const GapInsideJob: React.FC<Props> = ({ jobPlural, low, high, locale, cu
       </Interactive.Div>
 
       <Interactive.Div name="Lower earner" style={{ position: "absolute", left: SAFE.left, right: SAFE.right, top: 700, opacity: fade(T.low), translate: rise(T.low) }}>
-        <div style={{ fontFamily: FONT.mono, fontSize: 34, letterSpacing: "0.1em", textTransform: "uppercase", color: COLOR.inkSoft }}>One in ten earns under</div>
+        <div style={{ fontSize: 44, fontWeight: 600, color: COLOR.inkSoft }}>One in ten earns under</div>
         <div style={{ ...display, fontStretch: "84%", fontSize: 170, color: COLOR.chilli }}>{counted(T.low, low)}</div>
       </Interactive.Div>
 
@@ -49,10 +49,10 @@ export const GapInsideJob: React.FC<Props> = ({ jobPlural, low, high, locale, cu
           position: "absolute",
           left: SAFE.left,
           top: 990,
-          height: 40,
-          borderRadius: 999,
-          border: `6px solid ${COLOR.ink}`,
-          background: `linear-gradient(90deg, ${COLOR.chilli}, ${COLOR.amber}, ${COLOR.zest})`,
+          height: 36,
+          borderRadius: 6,
+          // One flat colour: the stretch of pay between the two people.
+          backgroundColor: COLOR.brine,
           width: interpolate(frame, [T.bar, T.high + 0.4 * fps], [60, 1080 - SAFE.left - SAFE.right], { extrapolateLeft: "clamp", extrapolateRight: "clamp", easing: Easing.bezier(0.16, 1, 0.3, 1) }),
           opacity: fade(T.bar),
         }}
@@ -60,7 +60,7 @@ export const GapInsideJob: React.FC<Props> = ({ jobPlural, low, high, locale, cu
 
       <Interactive.Div name="Higher earner" style={{ position: "absolute", left: SAFE.left, right: SAFE.right, top: 1080, textAlign: "right", opacity: fade(T.high), translate: rise(T.high) }}>
         <div style={{ ...display, fontStretch: "84%", fontSize: 170 }}>{counted(T.high, high)}</div>
-        <div style={{ fontFamily: FONT.mono, fontSize: 34, letterSpacing: "0.1em", textTransform: "uppercase", color: COLOR.inkSoft }}>One in ten earns over</div>
+        <div style={{ fontSize: 44, fontWeight: 600, color: COLOR.inkSoft }}>One in ten earns over</div>
       </Interactive.Div>
 
       <Interactive.Div name="Gap" style={{ position: "absolute", left: SAFE.left, right: SAFE.right, top: 1370, fontSize: 58, fontWeight: 600, opacity: fade(T.apart), translate: rise(T.apart) }}>
