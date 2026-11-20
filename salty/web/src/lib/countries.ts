@@ -25,6 +25,8 @@ export type Country = {
    * Reasons are in salty/data/SOURCES.md.
    */
   live: boolean;
+  /** Shown in place of the checker while the country is not live: the honest reason, in Salty's voice. */
+  soonNote?: string;
 };
 
 const isLive = (code: CountryCode) => (liveCountries as string[]).includes(code);
@@ -35,19 +37,22 @@ export const COUNTRIES: Record<CountryCode, Country> = {
     publisher: "Office for National Statistics", live: isLive("uk") },
   us: { code: "us", name: "United States", inName: "the US", flag: "🇺🇸", locale: "en-US", currency: "USD", fullTimeHours: 40, examplePay: 55000,
     measure: "yearly wages before tax for employees",
-    publisher: "Bureau of Labor Statistics", live: isLive("us") },
+    publisher: "Bureau of Labor Statistics", live: isLive("us"),
+    soonNote: "US pay figures are on the way. The official source has to be loaded by hand and that hasn't been done yet." },
   au: { code: "au", name: "Australia", inName: "Australia", flag: "🇦🇺", locale: "en-AU", currency: "AUD", fullTimeHours: 38, examplePay: 80000,
     measure: "yearly salary or wages before tax, taken from tax returns, for everyone in the job whatever their hours",
     publisher: "Australian Taxation Office",
     caveat: "Australia's figures include part-time and casual workers. If you work full-time, you will rank higher here than you would against full-timers only.",
     // Held back: against this all-hours data an ordinary full-time wage ranks near the top
     // (a full-time barista came out above 97% of baristas), which would mislead.
-    live: isLive("au") },
+    live: isLive("au"),
+    soonNote: "We only show numbers we'd stake our name on. Australia's free official figures mix part-time and casual work in with full-time, which would make your pay look better than it is. We're holding Australia back until we have full-time figures." },
   nz: { code: "nz", name: "New Zealand", inName: "New Zealand", flag: "🇳🇿", locale: "en-NZ", currency: "NZD", fullTimeHours: 40, examplePay: 70000,
     measure: "pay before tax",
     publisher: "Stats NZ",
     // Held back: the only openly downloadable figures are 8 broad groups, hourly, from 2019.
-    live: isLive("nz") },
+    live: isLive("nz"),
+    soonNote: "New Zealand doesn't yet publish free official pay figures job by job, only for eight broad groups. We're looking for a source we can trust." },
 };
 
 export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];

@@ -22,11 +22,19 @@ export default function Privacy() {
             </p>
           </section>
           <section>
-            <h2>The waitlist</h2>
+            <h2>The raise plan</h2>
             <p>
-              If you join the waitlist we store your email address, your country, the job group you checked, the verdict
-              you got (for example &ldquo;Fair shake&rdquo;) and which upcoming feature you picked. We use this to email
-              you when {brand.name} launches and to decide what to build first. We do not sell or share it.
+              Your answers to the raise plan questions are used in your browser to build your plan. They are not sent to us and
+              are not saved.
+            </p>
+          </section>
+          <section>
+            <h2>If you give us your email</h2>
+            <p>
+              We store your email address and what you signed up for (the weekly pay drop, the raise plan, the offer plan, the
+              employer report or news about a country). Where it applies we also store your country and the job group you
+              looked at. We use this to send you what you asked for and to decide what to build next. We do not sell or share
+              it, and every email has an unsubscribe link.
             </p>
             <p>
               You can ask us to delete your details at any time
@@ -46,7 +54,7 @@ export default function Privacy() {
               {analytics
                 ? "We count page views and button presses with a tool that uses no cookies and does not identify you. It records which job group was checked, never the pay."
                 : "We do not use cookies or tracking on this site."}{" "}
-              Your browser remembers the country you picked so you do not have to choose it again; that stays on your device.
+              Your browser remembers the country you picked and whether you closed the sign-up prompt, so you are not asked again; that stays on your device.
             </p>
           </section>
           <section>

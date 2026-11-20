@@ -60,6 +60,20 @@ Building in public turns the project into your reputation. The founder account's
 - The founder account links to Salty and to your own page, and Salty's site has a "built in public" block that links back (it appears once your handles are set).
 - Post the real numbers, including the bad days. That is what people follow.
 
+## What is built into the site today
+
+| Path | State in the product |
+|---|---|
+| Email list | Asked for once when the site opens (easy to close, stays away for a month), and offered again at each step |
+| Raise plan | Built. Six questions, then a free plan: the figure to ask for, how strong the case is, when to ask, the opening line. The full word-for-word plan is locked behind payment, or collects emails until a payment link is set |
+| Offer check | Built and free. Ranks a job offer and gives the counter figure and line |
+| Employers | Built and free. Shows the low, fair and strong figure for a role and collects work emails for the full report |
+| Recommended tools | The slot is built and hidden until real partners are added |
+| Pay by company | Not built. No free source of company-level pay has been loaded |
+| Countries not yet live | Shown as "soon" with the honest reason and an email sign-up, so demand is counted by country |
+
+The order on screen follows one rule: give something useful first, then ask. The pay check is free, the raise plan summary is free, and only the full plan asks for money.
+
 ## What to do first
 
 1. Run the two-week test in `marketing.md` and watch which waitlist feature wins.

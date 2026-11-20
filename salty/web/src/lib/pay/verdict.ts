@@ -4,8 +4,10 @@ export type Verdict = {
   id: VerdictId;
   /** Short label shown on the result and the share card. */
   label: string;
-  /** One line said to the person, in Salty's voice. */
+  /** One line said to the person about their own pay, in Salty's voice. */
   line: string;
+  /** The same verdict when the figure is a job offer rather than current pay. */
+  offerLine: string;
   /** Number of shakers shown, 0 to 3. More shakers means more reason to be salty. */
   shakers: number;
 };
@@ -15,30 +17,35 @@ const VERDICTS: Record<VerdictId, Verdict> = {
     id: "extra-salty",
     label: "Extra salty",
     line: "Most people doing your job are paid more than you. You have every right to be salty.",
+    offerLine: "This is a lowball. Most people already doing this job are paid more.",
     shakers: 3,
   },
   salty: {
     id: "salty",
     label: "Salty",
     line: "You're paid less than the typical person in your job. Worth a conversation.",
+    offerLine: "Below the going rate. There is room to push.",
     shakers: 2,
   },
   fair: {
     id: "fair",
     label: "Fair shake",
     line: "You're right around the middle for your job. Not robbed, not spoiled.",
+    offerLine: "A fair offer, right around the middle for the job.",
     shakers: 1,
   },
   seasoned: {
     id: "seasoned",
     label: "Well seasoned",
     line: "You're paid more than most people in your job. Nicely done.",
+    offerLine: "A good offer. It beats most people already in the job.",
     shakers: 0,
   },
   "top-shelf": {
     id: "top-shelf",
     label: "Top shelf",
     line: "You're near the top of the pay range for your job. Whatever you did, it worked.",
+    offerLine: "A strong offer, near the top of the range for the job.",
     shakers: 0,
   },
 };

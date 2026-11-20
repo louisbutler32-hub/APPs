@@ -2,7 +2,15 @@
 
 **Find out if you should be.** Type your job and your pay, and see where you rank against everyone doing the same work, using official government pay figures.
 
-This is the validation test for the idea: a free pay check on the web, a shareable result, and a waitlist for the paid app. If enough people sign up, the app gets built.
+What it does today:
+
+- **Pay check:** where your pay ranks in your job, with a shareable result.
+- **Raise plan:** six questions, then the figure to ask for, how strong your case is, when to ask and how to open. The full word-for-word plan is the paid part.
+- **Offer check:** is a job offer low, fair or strong, and what to say back.
+- **For employers:** the low, fair and strong figure for any role.
+- **Sunday pay drop:** the email list, asked for once when the site opens and easy to close.
+
+It is still a test of the idea: the aim is to learn whether people use it, share it, sign up and pay.
 
 ## What is here
 

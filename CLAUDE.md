@@ -4,7 +4,7 @@ This repo holds apps built on free public data. Each app lives in its own top-le
 
 ## Salty
 
-A pay checker: type a job and a salary, see where you rank among everyone doing that job, from official statistics. It is currently a validation test: a free web tool plus a waitlist for the paid app.
+A pay checker: type a job and a salary, see where you rank among everyone doing that job, from official statistics. Around it sit a raise plan (free summary, paid full plan), an offer check, an employer view and an email list. It is still a validation test.
 
 - `salty/web` is the site. Next.js, exported as plain static files. This version of Next.js is newer than most training data: read `salty/web/AGENTS.md` and the guides in `node_modules/next/dist/docs/` before changing framework-level code.
 - `salty/data` is the pay data. `pipelines/<country>/build.py` writes `out/<country>.json`; the site reads only `out/`. `SOURCES.md` records every source, its licence and its weaknesses.
@@ -26,7 +26,8 @@ npm run search-check   # prints search matches for common job titles
 ### Rules that matter here
 
 1. **Published numbers only.** Never interpolate, estimate or hand-edit a figure in `salty/data/out`. A suppressed value stays empty. Where the site estimates something (a rank from a median and an average), it is computed in `web/src/lib/pay/percentile.ts` and labelled "Estimate" on screen.
-2. **Pay stays on the device.** The salary a visitor types is never sent anywhere: not to the waitlist, not to analytics, not into a share link or image. Keep it that way.
+2. **Pay stays on the device.** The salary a visitor types, and their raise-plan answers, are never sent anywhere: not with a sign-up, not to analytics, not into a share link or image. Keep it that way. All sign-ups go through `web/src/lib/signup.ts`.
+7. **Value before the ask.** Free tools give a real answer first; payment and email asks come after it, and every prompt can be closed.
 3. **Say what the data cannot do.** If a source has a weakness a user would care about (for example, it mixes part-time workers in), it goes next to the result as a `caveat` in `web/src/lib/countries.ts`, not in small print.
 4. **Respect the sources.** Do not disguise automated downloads as a browser, and do not work around a site that refuses them. The United States pipeline reads a hand-downloaded file for this reason.
 5. **Brand.** Copy and visuals follow `salty/docs/brand.md`: plain words ("the middle", not "median"), the five verdict names, the fixed colour palette.

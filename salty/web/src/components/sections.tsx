@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { brand, COMING_FEATURES } from "@/lib/brand";
+import { brand } from "@/lib/brand";
 import { COUNTRIES } from "@/lib/countries";
 import { AVAILABLE, DATA, popularJobs } from "@/lib/pay/data";
 import { moneyShort, shortPeriod } from "@/lib/pay/format";
 import type { CountryCode } from "@/lib/pay/types";
 import { Grains } from "./Grains";
 import { Logo } from "./Logo";
-import { WaitlistForm } from "./WaitlistForm";
+import { EmailForm } from "./EmailForm";
+import { OpenGateLink } from "./EmailGate";
 
 export function SiteHeader() {
   return (
@@ -27,9 +28,7 @@ export function SiteHeader() {
             <span className="sr-only sm:hidden">{COUNTRIES[code].name}</span>
           </Link>
         ))}
-        <a href="#waitlist" className="press ml-1 rounded-full border-2 border-ink bg-zest px-4 py-1.5 text-sm font-semibold shadow-hard-sm">
-          Waitlist
-        </a>
+        <OpenGateLink className="press ml-1 rounded-full border-2 border-ink bg-zest px-4 py-1.5 text-sm font-semibold shadow-hard-sm">Pay drop</OpenGateLink>
       </nav>
     </header>
   );
@@ -118,26 +117,39 @@ export function HowItWorks() {
   );
 }
 
+const TOOLS = [
+  { title: "Pay check", tag: "Free", body: "Where you rank against everyone doing your job." },
+  { title: "Raise plan", tag: "Free to start", body: "The figure to ask for, how strong your case is, and the words to use." },
+  { title: "Offer check", tag: "Free", body: "Is a job offer low, fair or strong? And what to say back." },
+  { title: "For employers", tag: "Free", body: "What to offer for any role, from the same official figures." },
+  { title: "Sunday pay drop", tag: "Free", body: "Three pay facts worth knowing and one move to make, weekly." },
+  { title: "Pay by company", tag: "Coming", body: "What your employer, and the one down the road, actually pays." },
+];
+
 export function Coming() {
   return (
-    <section id="waitlist" className="relative scroll-mt-4 border-y-2 border-ink bg-brine text-white">
+    <section id="join" className="relative scroll-mt-4 border-y-2 border-ink bg-brine text-white">
       <Grains tone="bg-white/70" className="opacity-60" />
       <div className="relative mx-auto grid max-w-6xl gap-12 px-5 py-20 sm:px-8 sm:py-28 lg:grid-cols-2 lg:gap-16">
         <div>
-          <p className="eyebrow text-white/80">Coming soon</p>
+          <p className="eyebrow text-white/80">More than a number</p>
           <h2 className="display mt-3 text-[clamp(2.25rem,7vw,4rem)]">Knowing is step one. Getting paid is step two.</h2>
           <p className="mt-5 max-w-md text-lg text-white/90">
-            The free check tells you where you stand. The app we&apos;re building tells you what to do about it.
+            Check your pay, then build the plan to change it. And every Sunday, the pay drop: three pay facts worth knowing and one
+            move to make.
           </p>
           <div className="mt-8 max-w-lg">
-            <WaitlistForm tone="brine" />
+            <EmailForm interest="newsletter" cta="Get the pay drop" tone="brine" successTitle="You're on the list." successBody="You'll get the next pay drop when it goes out." />
           </div>
         </div>
         <ul className="grid content-start gap-4 sm:grid-cols-2">
-          {COMING_FEATURES.map((feature) => (
-            <li key={feature.id} className="rounded-2xl border-2 border-ink bg-salt p-5 text-ink shadow-hard-sm">
-              <h3 className="display text-xl">{feature.title}</h3>
-              <p className="mt-2 text-sm text-ink-soft">{feature.body}</p>
+          {TOOLS.map((tool) => (
+            <li key={tool.title} className="rounded-2xl border-2 border-ink bg-salt p-5 text-ink shadow-hard-sm">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="display text-xl">{tool.title}</h3>
+                <span className={`shrink-0 rounded-full border border-ink px-2 py-0.5 text-xs font-semibold ${tool.tag === "Coming" ? "bg-white" : "bg-zest"}`}>{tool.tag}</span>
+              </div>
+              <p className="mt-2 text-sm text-ink-soft">{tool.body}</p>
             </li>
           ))}
         </ul>
@@ -222,6 +234,7 @@ export function SiteFooter() {
             <Link href="/#sources" className="hover:text-zest">
               Sources
             </Link>
+            <OpenGateLink className="hover:text-zest">Sunday pay drop</OpenGateLink>
             <Link href="/privacy" className="hover:text-zest">
               Privacy
             </Link>

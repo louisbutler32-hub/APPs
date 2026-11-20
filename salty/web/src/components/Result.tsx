@@ -9,8 +9,11 @@ import type { CountryData, Job } from "@/lib/pay/types";
 import { verdictFor, type Verdict, type VerdictId } from "@/lib/pay/verdict";
 import { canvasToBlob, drawShareCard, type ShareCardContent } from "@/lib/share-card";
 import { track } from "@/lib/track";
+import { target } from "@/lib/raise-plan";
+import { EmailForm } from "./EmailForm";
+import { RaisePlan } from "./RaisePlan";
+import { Recommended } from "./Recommended";
 import { Shaker } from "./Shaker";
-import { WaitlistForm } from "./WaitlistForm";
 
 const TONE: Record<VerdictId, string> = {
   "extra-salty": "bg-chilli text-ink",
@@ -20,8 +23,10 @@ const TONE: Record<VerdictId, string> = {
   "top-shelf": "bg-zest text-ink",
 };
 
+type Words = { figure: string; lead: string; tail: string; mine: string; approx: boolean };
+
 /** The headline in the person's own terms, plus the first-person version for sharing. */
-function describe(ranking: Ranking): { figure: string; lead: string; tail: string; mine: string; approx: boolean } | null {
+function describe(ranking: Ranking, offer: boolean): Words | null {
   switch (ranking.kind) {
     case "published":
     case "estimate": {
@@ -31,40 +36,32 @@ function describe(ranking: Ranking): { figure: string; lead: string; tail: strin
         return {
           figure: percent(100 - p),
           lead: approx ? "Roughly" : "",
-          tail: "of people in your job are paid more than you.",
+          tail: offer ? "of people in this job are paid more than this offer." : "of people in your job are paid more than you.",
           mine: "of people in my job are paid more than me.",
           approx,
         };
       }
       return {
         figure: percent(p),
-        lead: approx ? "You're paid more than roughly" : "You're paid more than",
-        tail: "of people in your job.",
+        lead: offer ? (approx ? "This offer beats roughly" : "This offer beats") : approx ? "You're paid more than roughly" : "You're paid more than",
+        tail: offer ? "of people already in the job." : "of people in your job.",
         mine: "of people in my job are paid less than me.",
         approx,
       };
     }
     case "bound":
-      return ranking.side === "below"
-        ? {
-            figure: `Bottom ${ranking.q}%`,
-            lead: "You're in the",
-            tail: "for pay in your job.",
-            mine: "for pay in my job.",
-            approx: false,
-          }
-        : {
-            figure: `Top ${100 - ranking.q}%`,
-            lead: "You're in the",
-            tail: "for pay in your job.",
-            mine: "for pay in my job.",
-            approx: false,
-          };
+      return {
+        figure: ranking.side === "below" ? `Bottom ${ranking.q}%` : `Top ${100 - ranking.q}%`,
+        lead: offer ? "This offer is in the" : "You're in the",
+        tail: offer ? "for pay in this job." : "for pay in your job.",
+        mine: "for pay in my job.",
+        approx: false,
+      };
     case "median-only":
       return {
         figure: ranking.side === "below" ? "Below" : ranking.side === "above" ? "Above" : "Bang on",
-        lead: "You're",
-        tail: "the middle for your job.",
+        lead: offer ? "This offer is" : "You're",
+        tail: offer ? "the middle for the job." : "the middle for your job.",
         mine: "the middle for pay in my job.",
         approx: false,
       };
@@ -140,12 +137,13 @@ function Distribution({ job, country, place }: { job: Job; country: Country; pla
   );
 }
 
-type Props = { country: Country; data: Pick<CountryData, "period" | "source">; job: Job; pay: number };
+type Props = { mode: "pay" | "offer"; country: Country; data: Pick<CountryData, "period" | "source">; job: Job; pay: number };
 
-export function Result({ country, data, job, pay }: Props) {
+export function Result({ mode, country, data, job, pay }: Props) {
+  const offer = mode === "offer";
   const ranking = useMemo(() => rank(job, pay), [job, pay]);
   const place = positionOf(job, pay, ranking);
-  const words = describe(ranking);
+  const words = describe(ranking, offer);
   const figure = useCountUp(words?.figure ?? "");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shareState, setShareState] = useState<"idle" | "working" | "copied">("idle");
@@ -256,9 +254,11 @@ export function Result({ country, data, job, pay }: Props) {
           </p>
         )}
 
-        <p className="mt-4 text-lg">{verdict.line}</p>
+        <p className="mt-4 text-lg">{offer ? verdict.offerLine : verdict.line}</p>
         {country.caveat && <p className="mt-3 rounded-xl border-2 border-dashed border-ink/30 p-3 text-sm text-ink-soft">{country.caveat}</p>}
 
+        {!offer && (
+          <>
         <div className="mt-7 flex flex-col gap-3 sm:flex-row">
           <button
             type="button"
@@ -280,6 +280,8 @@ export function Result({ country, data, job, pay }: Props) {
             <img src={cardUrl} alt={`Share image: ${words.figure} ${words.mine}`} className="w-full max-w-xs rounded-2xl border-2 border-ink shadow-hard-sm" />
             <figcaption className="mt-2 text-sm text-ink-soft">Your share image. Press and hold (or right-click) to save it.</figcaption>
           </figure>
+        )}
+          </>
         )}
 
         <details className="mt-6 border-t border-ink/10 pt-4 text-sm text-ink-soft">
@@ -305,18 +307,49 @@ export function Result({ country, data, job, pay }: Props) {
         </details>
       </div>
 
-      <div className="mt-8 rounded-3xl border-2 border-ink bg-brine p-6 text-white shadow-hard sm:p-9">
-        <p className="eyebrow text-white/80">Coming soon</p>
-        <p className="display mt-2 text-[clamp(1.75rem,6vw,2.75rem)]">
-          {verdict.shakers > 0 ? "Want to do something about it?" : "Want the full picture?"}
-        </p>
-        <p className="mt-3 max-w-xl text-white/90">
-          We&apos;re building pay by company and a word-for-word script for asking for more. Get it first.
-        </p>
-        <div className="mt-6">
-          <WaitlistForm tone="brine" context={{ country: country.code, job: job.code, verdict: verdict.id }} />
-        </div>
+      <div className="mt-8">
+        {offer ? <OfferCounter country={country} job={job} offer={pay} /> : <RaisePlan country={country} job={job} pay={pay} underpaid={verdict.shakers >= 2} />}
       </div>
+      <Recommended />
+    </div>
+  );
+}
+
+/** What to say back to an offer: a counter figure from the published pay points, and the line to use. */
+function OfferCounter({ country, job, offer }: { country: Country; job: Job; offer: number }) {
+  const goal = target(job, offer);
+  return (
+    <div className="rounded-3xl border-2 border-ink bg-zest p-6 shadow-hard sm:p-9">
+      <p className="eyebrow">Next step</p>
+      {goal.kind === "raise" ? (
+        <>
+          <p className="display mt-2 text-[clamp(1.9rem,7vw,3rem)]">Counter at {money(country, goal.opening)}.</p>
+          <p className="mt-3 max-w-xl text-lg">
+            Aim to land on {money(country, goal.target)}: {goal.why}. Many offers have room in them, and one polite ask is a normal part of
+            being hired.
+          </p>
+          <p className="mt-4 rounded-2xl border-2 border-ink bg-white p-4 text-lg">
+            &ldquo;Thank you, I&apos;m really pleased to get the offer. Looking at the official figures for this role, I was expecting
+            something closer to {money(country, goal.opening)}. Is there room to move?&rdquo;
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="display mt-2 text-[clamp(1.9rem,7vw,3rem)]">Take a good look at this one.</p>
+          <p className="mt-3 max-w-xl text-lg">
+            This offer is already above the highest pay point the official figures publish for the job. Check the hours, the holiday and
+            the pension before you say yes, because the money is not where the catch will be.
+          </p>
+        </>
+      )}
+      <p className="mt-6 mb-3 font-semibold">The full counter-offer plan is coming. Get it first:</p>
+      <EmailForm
+        interest="offer"
+        context={{ country: country.code, job: job.code }}
+        cta="Tell me when it opens"
+        successTitle="You're first in line."
+        successBody="We'll email you when the counter-offer plan opens."
+      />
     </div>
   );
 }
