@@ -1,0 +1,71 @@
+import type { CountryCode } from "./pay/types";
+
+export type Country = {
+  code: CountryCode;
+  name: string;
+  /** Used in sentences: "in the UK", "in Australia". */
+  inName: string;
+  flag: string;
+  locale: string;
+  currency: string;
+  /** Typical full-time hours per week, used only to turn an hourly rate into a yearly figure. */
+  fullTimeHours: number;
+  /** A believable salary for the input placeholder. */
+  examplePay: number;
+  /** Who the official figures cover, finishing the sentence "The figures are ...". Keep in step with salty/data/SOURCES.md. */
+  measure: string;
+  /** Short name of the publisher, for tight spots. */
+  publisher: string;
+  /** A limitation big enough that it must sit next to the result, not in the small print. */
+  caveat?: string;
+  /**
+   * Whether the site shows this country. A country can have data in salty/data/out and still be
+   * held back here when that data cannot support the claim the site makes. Reasons are in SOURCES.md.
+   */
+  live: boolean;
+};
+
+export const COUNTRIES: Record<CountryCode, Country> = {
+  uk: { code: "uk", name: "United Kingdom", inName: "the UK", flag: "🇬🇧", locale: "en-GB", currency: "GBP", fullTimeHours: 37.5, examplePay: 32000,
+    measure: "yearly pay before tax for full-time employees who have been in the job at least a year",
+    publisher: "Office for National Statistics", live: true },
+  us: { code: "us", name: "United States", inName: "the US", flag: "🇺🇸", locale: "en-US", currency: "USD", fullTimeHours: 40, examplePay: 55000,
+    measure: "yearly wages before tax for employees",
+    publisher: "Bureau of Labor Statistics", live: true },
+  au: { code: "au", name: "Australia", inName: "Australia", flag: "🇦🇺", locale: "en-AU", currency: "AUD", fullTimeHours: 38, examplePay: 80000,
+    measure: "yearly salary or wages before tax, taken from tax returns, for everyone in the job whatever their hours",
+    publisher: "Australian Taxation Office",
+    caveat: "Australia's figures include part-time and casual workers. If you work full-time, you will rank higher here than you would against full-timers only.",
+    // Held back: against this all-hours data an ordinary full-time wage ranks near the top
+    // (a full-time barista came out above 97% of baristas), which would mislead.
+    live: false },
+  nz: { code: "nz", name: "New Zealand", inName: "New Zealand", flag: "🇳🇿", locale: "en-NZ", currency: "NZD", fullTimeHours: 40, examplePay: 70000,
+    measure: "pay before tax",
+    publisher: "Stats NZ", live: true },
+};
+
+export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];
+
+export function isCountryCode(value: string): value is CountryCode {
+  return value in COUNTRIES;
+}
+
+/** Best guess at a visitor's country from the browser, limited to the countries on offer. */
+export function guessCountry(languages: readonly string[], timeZone: string, available: CountryCode[]): CountryCode {
+  const pick = (code: CountryCode) => (available.includes(code) ? code : null);
+  let guess: CountryCode | null = null;
+  if (timeZone.startsWith("Australia/")) guess = pick("au");
+  else if (timeZone === "Pacific/Auckland" || timeZone === "Pacific/Chatham") guess = pick("nz");
+  else if (timeZone === "Europe/London") guess = pick("uk");
+  else if (timeZone.startsWith("America/") || timeZone.startsWith("US/")) guess = pick("us");
+  if (guess) return guess;
+  for (const language of languages) {
+    const region = language.split("-")[1]?.toUpperCase();
+    if (region === "GB") guess = pick("uk");
+    else if (region === "US") guess = pick("us");
+    else if (region === "AU") guess = pick("au");
+    else if (region === "NZ") guess = pick("nz");
+    if (guess) return guess;
+  }
+  return available[0];
+}

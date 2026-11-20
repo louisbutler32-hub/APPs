@@ -1,0 +1,34 @@
+{
+  "name": "salty-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "sync-data": "node scripts/sync-data.mjs",
+    "predev": "npm run sync-data",
+    "dev": "next dev",
+    "prebuild": "npm run sync-data",
+    "build": "next build",
+    "start": "npx --yes serve out",
+    "lint": "eslint",
+    "typecheck": "npm run sync-data && next typegen && tsc --noEmit",
+    "pretest": "npm run sync-data",
+    "test": "vitest run",
+    "search-check": "npm run sync-data && node scripts/search-check.mts"
+  },
+  "dependencies": {
+    "next": "16.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "tailwindcss": "4.3.3",
+    "typescript": "^5",
+    "vitest": "^5.1.1"
+  }
+}

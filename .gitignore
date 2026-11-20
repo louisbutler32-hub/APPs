@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+__pycache__/
+# Raw government downloads are re-fetched by the pipelines, never committed
+salty/data/pipelines/*/raw/
