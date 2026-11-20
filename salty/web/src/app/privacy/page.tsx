@@ -22,6 +22,15 @@ export default function Privacy() {
             </p>
           </section>
           <section>
+            <h2>AI estimates</h2>
+            <p>
+              For a job or country without official figures, Salty asks an AI to look up what the job usually pays. To do that
+              it sends the job title and the country you entered to our AI provider. It does not send your pay, your email or
+              anything else about you. The answer is kept for up to a month so the next person asking about the same job gets
+              it straight away.
+            </p>
+          </section>
+          <section>
             <h2>The raise plan</h2>
             <p>
               Your answers to the raise plan questions are used in your browser to build your plan. They are not sent to us and

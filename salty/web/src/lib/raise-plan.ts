@@ -1,4 +1,4 @@
-import type { Country } from "./countries";
+import type { Place } from "./world";
 import { money } from "./pay/format";
 import { quantilePoints } from "./pay/percentile";
 import type { Job } from "./pay/types";
@@ -142,14 +142,14 @@ export function target(job: Job, pay: number): Target {
 export type Strength = { level: "Strong" | "Solid" | "Needs building"; forYou: string[]; fixFirst: string[] };
 
 /** How strong the case is, from plain rules the person can read, with the reasons spelled out. */
-export function strength(answers: Answers, belowMiddle: boolean): Strength {
+export function strength(answers: Answers, belowMiddle: boolean, official = true): Strength {
   let score = 0;
   const forYou: string[] = [];
   const fixFirst: string[] = [];
 
   if (belowMiddle) {
     score += 2;
-    forYou.push("Official figures show you're paid below the middle for your job.");
+    forYou.push(official ? "Official figures show you're paid below the middle for your job." : "Our estimate puts you below the going rate for your job.");
   }
   const longWithoutRaise = answers.lastRaise === "over2" || answers.lastRaise === "1to2" || (answers.lastRaise === "never" && !["under6", "6to12"].includes(answers.tenure));
   if (longWithoutRaise) {
@@ -214,14 +214,16 @@ function evidence(answers: Answers): string {
   return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
-export type PlanInput = { country: Country; job: Job; pay: number; answers: Answers };
+/** `official` is false when the pay figures are an AI estimate, so the script must not claim official figures. */
+export type PlanInput = { country: Place; job: Job; pay: number; answers: Answers; official?: boolean };
 
 /** The first lines of the conversation. This much is free. */
-export function openingLines({ country, job, pay, answers }: PlanInput): string[] {
+export function openingLines({ country, job, pay, answers, official = true }: PlanInput): string[] {
   const goal = target(job, pay);
-  const lines = [`"Thanks for making time. I'd like to talk about my pay. I've been in the role ${TENURE_WORDS[answers.tenure]}, and I've looked at the official ${country.publisher} figures for my job."`];
+  const looked = official ? `I've looked at the official ${country.publisher} figures for my job` : "I've looked into what this job pays elsewhere";
+  const lines = [`"Thanks for making time. I'd like to talk about my pay. I've been in the role ${TENURE_WORDS[answers.tenure]}, and ${looked}."`];
   if (goal.kind === "raise" && typeof job.p50 === "number") {
-    lines.push(`"The middle for this job is ${money(country, job.p50)}. I'm on ${money(country, pay)}."`);
+    lines.push(official ? `"The middle for this job is ${money(country, job.p50)}. I'm on ${money(country, pay)}."` : `"The going rate looks to be around ${money(country, job.p50)}. I'm on ${money(country, pay)}."`);
   }
   return lines;
 }
@@ -230,8 +232,9 @@ export type PlanSection = { title: string; intro?: string; lines: string[] };
 
 /** The full word-for-word plan. This is the paid part. */
 export function fullPlan(input: PlanInput): PlanSection[] {
-  const { country, job, pay, answers } = input;
+  const { country, job, pay, answers, official = true } = input;
   const goal = target(job, pay);
+  const figures = official ? "the official figures for my job" : "what I can find on pay for my job";
   const m = (value: number) => money(country, value);
   const middle = typeof job.p50 === "number" ? m(job.p50) : "the going rate";
   const ask = goal.kind === "raise" ? m(goal.bigJump && goal.firstStep ? goal.firstStep : goal.opening) : "[your figure]";
@@ -287,7 +290,9 @@ export function fullPlan(input: PlanInput): PlanSection[] {
       lines: [
         `"There's no budget." → "I understand. Can we agree the figure now and the date it starts? If it can't be this quarter, I'd like the date in writing."`,
         `"It's not the right time." → "When is? Let's put that date in the diary now, so I know what I'm working towards."`,
-        `"You're already paid fairly." → "The official figures put the middle at ${middle}. What am I missing?"`,
+        official
+          ? `"You're already paid fairly." → "The official figures put the middle at ${middle}. What am I missing?"`
+          : `"You're already paid fairly." → "Everything I can find puts the going rate around ${middle}. What am I missing?"`,
         `"I can't make an exception." → "I'm not asking for an exception. I'm asking to be paid the going rate for the work I do. What would it take?"`,
         `"Leave it with me." → "Thank you. When should I expect to hear? I'll put a note in for two weeks today."`,
       ],
@@ -296,7 +301,7 @@ export function fullPlan(input: PlanInput): PlanSection[] {
       title: "The follow-up email",
       intro: "Send it the same day. If it isn't written down, it didn't happen.",
       lines: [
-        `"Thanks for talking today. To confirm: I asked to move from ${m(pay)} to ${ask}, based on the official figures for my job (middle: ${middle}) and on having ${proof}. You said [what they said]. We agreed to pick this up by [date]. Thanks again."`,
+        `"Thanks for talking today. To confirm: I asked to move from ${m(pay)} to ${ask}, based on ${figures} (middle: ${middle}) and on having ${proof}. You said [what they said]. We agreed to pick this up by [date]. Thanks again."`,
       ],
     },
     { title: "If the answer is no", lines: ifNo[answers.leave] },

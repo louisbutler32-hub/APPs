@@ -1,6 +1,7 @@
-import type { Country } from "../countries";
+/** What formatting money needs to know about a place. Countries and estimate places both fit. */
+type Money = { locale: string; currency: string };
 
-export function money(country: Country, amount: number): string {
+export function money(country: Money, amount: number): string {
   return new Intl.NumberFormat(country.locale, {
     style: "currency",
     currency: country.currency,
@@ -9,7 +10,7 @@ export function money(country: Country, amount: number): string {
 }
 
 /** Compact money for tight spots: £32k, $1.2m. */
-export function moneyShort(country: Country, amount: number): string {
+export function moneyShort(country: Money, amount: number): string {
   return new Intl.NumberFormat(country.locale, {
     style: "currency",
     currency: country.currency,
@@ -20,7 +21,7 @@ export function moneyShort(country: Country, amount: number): string {
     .toLowerCase();
 }
 
-export function currencySymbol(country: Country): string {
+export function currencySymbol(country: Money): string {
   const parts = new Intl.NumberFormat(country.locale, { style: "currency", currency: country.currency }).formatToParts(0);
   return parts.find((part) => part.type === "currency")?.value ?? "";
 }

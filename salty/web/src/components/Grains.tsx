@@ -17,10 +17,23 @@ const GRAINS = [
   { x: 31, y: 88, size: 9, turn: 62, delay: 0.55 },
 ];
 
-export function Grains({ className = "", tone = "bg-ink" }: { className?: string; tone?: string }) {
+/** Grains kept to the top and outer edges, for sections where the middle holds text or a form. */
+const EDGE_GRAINS = [
+  { x: 2, y: 9, size: 9, turn: 18, delay: 0 },
+  { x: 5, y: 78, size: 6, turn: -22, delay: 0.2 },
+  { x: 44, y: 3, size: 7, turn: 40, delay: 0.1 },
+  { x: 52, y: 93, size: 6, turn: -12, delay: 0.4 },
+  { x: 71, y: 4, size: 10, turn: 52, delay: 0.25 },
+  { x: 88, y: 2, size: 6, turn: -35, delay: 0.5 },
+  { x: 97, y: 30, size: 8, turn: 14, delay: 0.15 },
+  { x: 96, y: 84, size: 7, turn: -48, delay: 0.35 },
+  { x: 30, y: 96, size: 8, turn: 30, delay: 0.45 },
+];
+
+export function Grains({ className = "", tone = "bg-ink", edges = false }: { className?: string; tone?: string; edges?: boolean }) {
   return (
     <div aria-hidden className={`pointer-events-none absolute inset-0 overflow-hidden ${className}`}>
-      {GRAINS.map((grain, index) => (
+      {(edges ? EDGE_GRAINS : GRAINS).map((grain, index) => (
         <span
           key={index}
           className={`absolute animate-fall rounded-[1px] ${tone}`}

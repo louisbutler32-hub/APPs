@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { Country } from "@/lib/countries";
+import type { Place } from "@/lib/world";
 import { money } from "@/lib/pay/format";
 import type { Job } from "@/lib/pay/types";
 import { fullPlan, openingLines, QUESTIONS, strength, target, timing, type Answers } from "@/lib/raise-plan";
@@ -9,7 +9,8 @@ import { remember } from "@/lib/signup";
 import { track } from "@/lib/track";
 import { EmailForm } from "./EmailForm";
 
-type Props = { country: Country; job: Job; pay: number; underpaid: boolean };
+/** `official` is false when the figures behind the plan are an AI estimate rather than official statistics. */
+type Props = { country: Place; job: Job; pay: number; underpaid: boolean; official?: boolean };
 
 /** Settings for selling the full plan. All optional: without a checkout link the plan collects interest instead. */
 const CHECKOUT = process.env.NEXT_PUBLIC_PLAN_CHECKOUT_URL ?? "";
@@ -20,7 +21,7 @@ const UNLOCK_KEY = "salty.plan";
 
 const LEVEL_TONE = { Strong: "bg-zest", Solid: "bg-amber", "Needs building": "bg-white" } as const;
 
-export function RaisePlan({ country, job, pay, underpaid }: Props) {
+export function RaisePlan({ country, job, pay, underpaid, official = true }: Props) {
   const [stage, setStage] = useState<"intro" | "survey" | "plan">("intro");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<Answers>>({ changes: [] });
@@ -145,8 +146,8 @@ export function RaisePlan({ country, job, pay, underpaid }: Props) {
   const complete = answers as Answers;
   const goal = target(job, pay);
   const belowMiddle = typeof job.p50 === "number" && pay < job.p50;
-  const strong = strength(complete, belowMiddle);
-  const input = { country, job, pay, answers: complete };
+  const strong = strength(complete, belowMiddle, official);
+  const input = { country, job, pay, answers: complete, official };
   const sections = fullPlan(input);
 
   return (
@@ -161,22 +162,23 @@ export function RaisePlan({ country, job, pay, underpaid }: Props) {
               <p className="figure mt-3 text-[clamp(3.5rem,17vw,6rem)] text-brine">{m(goal.bigJump && goal.firstStep ? goal.firstStep : goal.target)}</p>
               {goal.bigJump && goal.firstStep ? (
                 <p className="mt-3 text-lg">
-                  The figure to aim for is <strong>{m(goal.target)}</strong>: {goal.why}. That is {Math.round(goal.increase * 100)}% above your pay
+                  The figure to aim for is <strong>{m(goal.target)}</strong>{official ? "" : " (our estimate)"}: {goal.why}. That is {Math.round(goal.increase * 100)}% above your pay
                   today, which is a lot to ask for in one conversation. Ask for <strong>{m(goal.firstStep)}</strong> now and a date for the rest.
                 </p>
               ) : (
                 <p className="mt-3 text-lg">
-                  That is {goal.why}. Open at <strong>{m(goal.opening)}</strong> so you have room to land on it.
+                  {official ? "That is" : "By our estimate that is"} {goal.why}. Open at <strong>{m(goal.opening)}</strong> so you have room to
+                  land on it.
                 </p>
               )}
             </>
           ) : goal.kind === "top" ? (
             <p className="mt-3 text-lg">
-              You&apos;re already above the highest pay point the official figures publish for this job, so there is no bigger number to
-              point at. Your case is about what you do, not what others earn.
+              You&apos;re already above the top of the range we have for this job, so there is no bigger number to point at. Your case
+              is about what you do, not what others earn.
             </p>
           ) : (
-            <p className="mt-3 text-lg">The official figures for this job don&apos;t give us a number to aim at.</p>
+            <p className="mt-3 text-lg">The figures for this job don&apos;t give us a number to aim at.</p>
           )}
         </section>
 
@@ -303,7 +305,7 @@ export function RaisePlan({ country, job, pay, underpaid }: Props) {
               <p className="mb-3 text-salt/90">The full plan opens soon. Leave your email and you&apos;ll get it first, at the launch price.</p>
               <EmailForm
                 interest="raise-plan"
-                context={{ country: country.code, job: job.code }}
+                context={{ country: country.code, job: job.code, job_title: job.title }}
                 cta="Tell me when it opens"
                 tone="brine"
                 successTitle="You're first in line."

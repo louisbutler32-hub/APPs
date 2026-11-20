@@ -35,7 +35,7 @@ Examples in voice:
 - "Official figures. Not vibes."
 - "Your pay never leaves your phone."
 
-The honesty rule matters most. Every number comes from a government statistics office, and where a figure is an estimate or has a known weakness the product says so next to the result. The brand's whole value is that people can trust the number.
+The honesty rule matters most. Where official figures exist, every number comes from a government statistics office. Where they do not (a job the figures miss, or a country outside the UK and US), Salty gives an AI estimate, shows it as a rough range with no percentage rank, and labels it "AI estimate" with its sources. The two are never blended. The brand's whole value is that people can trust the number and know which kind it is.
 
 ## The verdict ladder
 

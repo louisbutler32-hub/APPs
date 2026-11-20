@@ -1,6 +1,6 @@
 import { Checker } from "@/components/Checker";
 import { Grains } from "@/components/Grains";
-import { Coming, Founder, HeroIntro, HowItWorks, SiteFooter, SiteHeader, Sources, Sting, Ticker } from "@/components/sections";
+import { Coming, Founder, HeroIntro, HeroStats, HowItWorks, SiteFooter, SiteHeader, Sources, Sting, Ticker } from "@/components/sections";
 import { AVAILABLE } from "@/lib/pay/data";
 
 export default function Home() {
@@ -9,7 +9,7 @@ export default function Home() {
       <SiteHeader />
       <main>
         <section className="relative">
-          <Grains className="opacity-25" />
+          <Grains edges className="opacity-30" />
           <div className="relative mx-auto max-w-6xl px-5 pt-3 pb-16 sm:px-8 sm:pt-14 sm:pb-24">
             <Checker
               available={AVAILABLE}
@@ -23,6 +23,7 @@ export default function Home() {
                   }
                 >
                   <p>Type your job and your pay. See where you rank against everyone doing the same work.</p>
+                  <HeroStats />
                 </HeroIntro>
               }
             />

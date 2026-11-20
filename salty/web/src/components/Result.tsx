@@ -345,7 +345,7 @@ function OfferCounter({ country, job, offer }: { country: Country; job: Job; off
       <p className="mt-6 mb-3 font-semibold">The full counter-offer plan is coming. Get it first:</p>
       <EmailForm
         interest="offer"
-        context={{ country: country.code, job: job.code }}
+        context={{ country: country.code, job: job.code, job_title: job.title }}
         cta="Tell me when it opens"
         successTitle="You're first in line."
         successBody="We'll email you when the counter-offer plan opens."

@@ -64,7 +64,7 @@ export function HiringResult({ country, data, job }: Props) {
         <div className="mt-6">
           <EmailForm
             interest="employer"
-            context={{ country: country.code, job: job.code }}
+            context={{ country: country.code, job: job.code, job_title: job.title }}
             cta="Send me the report"
             tone="brine"
             note="One email when it's ready. Nothing else."

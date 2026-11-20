@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Checker } from "@/components/Checker";
 import { Grains } from "@/components/Grains";
-import { Coming, Founder, HeroIntro, HowItWorks, SiteFooter, SiteHeader, Sources, Sting, Ticker } from "@/components/sections";
+import { Coming, Founder, HeroIntro, HeroStats, HowItWorks, SiteFooter, SiteHeader, Sources, Sting, Ticker } from "@/components/sections";
 import { COUNTRIES, isCountryCode } from "@/lib/countries";
 import { AVAILABLE, DATA, popularJobs } from "@/lib/pay/data";
 import { money, shortPeriod } from "@/lib/pay/format";
@@ -35,7 +35,7 @@ export default async function CountryPage({ params }: PageProps<"/[country]">) {
       <SiteHeader />
       <main>
         <section className="relative">
-          <Grains className="opacity-25" />
+          <Grains edges className="opacity-30" />
           <div className="relative mx-auto max-w-6xl px-5 pt-3 pb-16 sm:px-8 sm:pt-14 sm:pb-24">
             <Checker
               available={AVAILABLE}
@@ -52,6 +52,7 @@ export default async function CountryPage({ params }: PageProps<"/[country]">) {
                   <p>
                     Type your job and your pay. See where you rank against everyone doing the same work in {country.inName}.
                   </p>
+                  <HeroStats />
                 </HeroIntro>
               }
             />
@@ -60,14 +61,14 @@ export default async function CountryPage({ params }: PageProps<"/[country]">) {
         <Ticker countries={[code]} />
 
         <section className="mx-auto max-w-6xl px-5 pt-20 sm:px-8 sm:pt-28">
-          <p className="eyebrow text-ink-soft">Popular jobs in {country.inName}</p>
+          <p className="kicker text-ink-soft">Popular jobs in {country.inName}</p>
           <h2 className="display mt-3 max-w-2xl text-[clamp(2.25rem,7vw,4rem)]">What the job actually pays.</h2>
           <ul className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {popular.map((job) => (
               <li key={job.code}>
                 <Link
                   href={`/${code}/${job.slug}`}
-                  className="press flex items-baseline justify-between gap-4 rounded-2xl border-2 border-ink bg-white px-5 py-4 shadow-hard-sm"
+                  className="lift flex items-baseline justify-between gap-4 rounded-2xl border-2 border-ink bg-white px-5 py-4 shadow-hard-sm"
                 >
                   <span className="font-medium">{job.title}</span>
                   <span className="font-display text-xl font-extrabold tracking-tight text-brine">{money(country, job.p50 as number)}</span>

@@ -70,7 +70,8 @@ Building in public turns the project into your reputation. The founder account's
 | Employers | Built and free. Shows the low, fair and strong figure for a role and collects work emails for the full report |
 | Recommended tools | The slot is built and hidden until real partners are added |
 | Pay by company | Not built. No free source of company-level pay has been loaded |
-| Countries not yet live | Shown as "soon" with the honest reason and an email sign-up, so demand is counted by country |
+| Other countries | UK, US or "Other": any other country runs on a labelled AI estimate, with an email sign-up for official figures, so demand is counted by country |
+| Follow-up emails | Written, in `salty/emails`: a welcome within the hour that depends on what the person did, then follow-ups at 3 days, 1 week, 1 month, 2 months, 6 months and 1 year. They need loading into an email tool |
 
 The order on screen follows one rule: give something useful first, then ask. The pay check is free, the raise plan summary is free, and only the full plan asks for money.
 
