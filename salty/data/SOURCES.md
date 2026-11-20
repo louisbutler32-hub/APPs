@@ -41,6 +41,7 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 - **Source:** U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, national estimates.
 - **Why there is no data yet:** www.bls.gov refuses automated downloads and says so ("bot activity that doesn't conform to BLS usage policy is prohibited"). The pipeline therefore reads a file downloaded by hand. Instructions are at the top of `pipelines/us/build.py`.
 - **Licence:** U.S. federal government work, generally public domain. The BLS copyright page has not been read from the build environment; confirm it when the file is added.
+- **The official data service was tried too:** `api.bls.gov` is meant for programs, but without a registration key it answered that the daily request limit for unregistered use was already reached (the limit is shared by everyone coming from the same address). A free key would lift that, but the key has to travel in the request itself, so it would need handling as a secret. The hand-downloaded file is simpler and gives every job at once.
 - **State of the pipeline:** written from the published file layout and run only against a small stand-in file. Check its first real output against the spreadsheet by eye.
 
 ## New Zealand (held back from the site)
