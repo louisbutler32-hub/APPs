@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { cleanJobTitle, parseEstimate } from "../src/lib/estimate-shared";
-import { estimatePay, handleEstimate, type EstimateClient } from "./estimate";
+import { estimatePay, handleEstimate, settingsFrom, type EstimateClient } from "./estimate";
+
+const SEARCH = { model: "claude-opus-5-5", search: true };
+const NO_SEARCH = { model: "claude-haiku-5-5", search: false };
 
 const NZ = { name: "New Zealand", iso: "NZ", currency: "NZD" };
 const UK = { name: "the United Kingdom", iso: "GB", currency: "GBP" };
@@ -95,7 +98,7 @@ describe("parseEstimate", () => {
 describe("estimatePay", () => {
   it("sends only the job and country, and returns the reported estimate", async () => {
     const { client, calls } = fake([report(good)]);
-    const outcome = await estimatePay(client, "claude-opus-5-5", NZ, "barista");
+    const outcome = await estimatePay(client, SEARCH, NZ, "barista");
     expect(outcome.ok).toBe(true);
     expect(calls).toHaveLength(1);
     expect(calls[0].messages).toEqual([{ role: "user", content: "Job title: barista\nCountry: New Zealand" }]);
@@ -104,10 +107,28 @@ describe("estimatePay", () => {
     expect(calls[0].system).toContain("NZD");
   });
 
+  it("without search: no search tool, no fallback setting, and the answer is marked as general knowledge", async () => {
+    const { client, calls } = fake([report(good)]);
+    const outcome = await estimatePay(client, NO_SEARCH, NZ, "barista");
+    expect(outcome.ok && outcome.estimate.method).toBe("general-knowledge");
+    expect(outcome.ok && outcome.estimate.sources).toEqual([]);
+    expect(calls[0].model).toBe("claude-haiku-5-5");
+    expect(JSON.stringify(calls[0].tools)).not.toContain("web_search");
+    expect(calls[0].fallbacks).toBeUndefined();
+    expect(calls[0].betas).toBeUndefined();
+    expect(calls[0].system).toContain("You cannot search");
+  });
+
+  it("with search on a non-Haiku model: asks the API to fall back if a safety check declines", async () => {
+    const { client, calls } = fake([report(good)]);
+    await estimatePay(client, SEARCH, NZ, "barista");
+    expect(calls[0].fallbacks).toBe("default");
+  });
+
   it("resumes a paused search by sending the turn back unchanged", async () => {
     const paused: Reply = { stop_reason: "pause_turn", content: [{ type: "server_tool_use", id: "s1", name: "web_search", input: { query: "barista pay nz" } }] };
     const { client, calls } = fake([paused, report(good)]);
-    const outcome = await estimatePay(client, "claude-opus-5-5", NZ, "barista");
+    const outcome = await estimatePay(client, SEARCH, NZ, "barista");
     expect(outcome.ok).toBe(true);
     expect(calls).toHaveLength(2);
     expect(calls[1].messages).toEqual([{ role: "user", content: "Job title: barista\nCountry: New Zealand" }, { role: "assistant", content: paused.content }]);
@@ -116,10 +137,10 @@ describe("estimatePay", () => {
   it("gives up after a few resumes, on a refusal, or when no report is made", async () => {
     const paused: Reply = { stop_reason: "pause_turn", content: [] };
     const stuck = fake([paused]);
-    expect(await estimatePay(stuck.client, "m", UK, "x y")).toEqual({ ok: false, reason: "failed" });
+    expect(await estimatePay(stuck.client, SEARCH, UK, "x y")).toEqual({ ok: false, reason: "failed" });
     expect(stuck.calls).toHaveLength(4);
-    expect(await estimatePay(fake([{ stop_reason: "refusal", content: [] }]).client, "m", UK, "x y")).toEqual({ ok: false, reason: "refused" });
-    expect(await estimatePay(fake([{ stop_reason: "end_turn", content: [{ type: "text", text: "About 30k." }] }]).client, "m", UK, "x y")).toEqual({ ok: false, reason: "failed" });
+    expect(await estimatePay(fake([{ stop_reason: "refusal", content: [] }]).client, SEARCH, UK, "x y")).toEqual({ ok: false, reason: "refused" });
+    expect(await estimatePay(fake([{ stop_reason: "end_turn", content: [{ type: "text", text: "About 30k." }] }]).client, SEARCH, UK, "x y")).toEqual({ ok: false, reason: "failed" });
   });
 });
 
@@ -152,7 +173,7 @@ describe("handleEstimate", () => {
 
   it("takes a listed country by code, with its currency, or any typed place without one", async () => {
     const listed = fake([report({ ...good, currency: "INR" })]);
-    await ask("?country=in&job=barista", {}, listed.client);
+    await ask("?country=in&job=barista", { SALTY_ESTIMATE_SEARCH: "on" }, listed.client);
     expect(listed.calls[0].messages).toEqual([{ role: "user", content: "Job title: barista\nCountry: India" }]);
     expect(listed.calls[0].system).toContain("INR");
     expect(JSON.stringify(listed.calls[0].tools)).toContain('"country":"IN"');
@@ -165,9 +186,10 @@ describe("handleEstimate", () => {
     expect(JSON.stringify(typed.calls[0].tools)).not.toContain("user_location");
   });
 
-  it("uses the model named in the settings when there is one", async () => {
-    const { client, calls } = fake([report(good)]);
-    await ask("?country=gb&job=barista", { SALTY_ESTIMATE_MODEL: "claude-haiku-5-5" }, client);
-    expect(calls[0].model).toBe("claude-haiku-5-5");
+  it("defaults to no search on the cheapest model, and searches only when the host setting says so", () => {
+    expect(settingsFrom({})).toEqual({ model: "claude-haiku-5-5", search: false });
+    expect(settingsFrom({ SALTY_ESTIMATE_SEARCH: "on" })).toEqual({ model: "claude-opus-5-5", search: true });
+    expect(settingsFrom({ SALTY_ESTIMATE_SEARCH: "on", SALTY_ESTIMATE_MODEL: "claude-sonnet-5-5" })).toEqual({ model: "claude-sonnet-5-5", search: true });
+    expect(settingsFrom({ SALTY_ESTIMATE_MODEL: "claude-opus-5-5" })).toEqual({ model: "claude-opus-5-5", search: false });
   });
 });

@@ -1,4 +1,5 @@
 import { cleanJobTitle, estimateInstructions, parseEstimate, type EstimateOutcome } from "./estimate-shared";
+import { builtinEstimate } from "./estimates-builtin";
 
 /** Where the estimate is for: a listed country (ISO code and currency known) or a place someone typed. */
 export type EstimateTarget = { name: string; iso?: string; currency?: string };
@@ -8,9 +9,11 @@ const ENDPOINT = process.env.NEXT_PUBLIC_ESTIMATE_URL ?? "";
 /** The hosted single-page preview has no server, so it asks Claude through the page host instead. */
 const PREVIEW = process.env.NEXT_PUBLIC_PREVIEW === "1";
 
-export const ESTIMATES_ON = PREVIEW || Boolean(ENDPOINT);
-/** True when answers come from general knowledge with no web search (the preview). */
-export const ESTIMATES_WITHOUT_SEARCH = PREVIEW;
+/**
+ * True when an AI can be asked live, for any job in any country. Without it the site still has
+ * the built-in estimates (common jobs in a set of countries), which cost nothing to show.
+ */
+export const LIVE_AI_ON = PREVIEW || Boolean(ENDPOINT);
 
 type Sample = { json: (input: string, options?: Record<string, unknown>) => Promise<unknown> };
 type Host = { claude?: { use: (name: string) => Promise<unknown> } };
@@ -45,6 +48,9 @@ async function askHost(place: EstimateTarget, job: string): Promise<EstimateOutc
 export async function requestEstimate(place: EstimateTarget, rawJob: string): Promise<EstimateOutcome> {
   const job = cleanJobTitle(rawJob);
   if (!job) return { ok: false, reason: "not-a-job" };
+  // A built-in estimate is free and instant, so it is always tried first.
+  const builtin = place.iso ? builtinEstimate(place.iso, job) : null;
+  if (builtin) return { ok: true, estimate: builtin };
   if (PREVIEW) return askHost(place, job);
   if (!ENDPOINT) return { ok: false, reason: "off" };
   try {
@@ -69,6 +75,6 @@ export const ESTIMATE_ERRORS: Record<Exclude<EstimateOutcome, { ok: true }>["rea
   "no-data": "We couldn't find reliable pay information for that job there. Try a more common name for it, and check the country.",
   refused: "We couldn't estimate that one. Try the plain name of the job.",
   busy: "Lots of people are asking right now. Give it a minute and try again.",
-  off: "AI estimates aren't switched on yet.",
+  off: "We don't have an estimate for that job there yet. Pick the closest one from the list.",
   failed: "The estimate didn't come back. Check your connection and try again.",
 };

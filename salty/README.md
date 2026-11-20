@@ -5,7 +5,7 @@
 What it does today:
 
 - **Pay check:** where your pay ranks in your job, with a shareable result. Official figures for the UK and US.
-- **AI estimate:** for any job the official figures miss, and for any other country, a rough pay range found by AI and labelled as an estimate.
+- **AI estimate:** outside the UK and US, a rough pay range labelled as an estimate. Common jobs in ten countries are built in and free; a live AI can be switched on for every other job and country.
 - **Raise plan:** six questions, then the figure to ask for, how strong your case is, when to ask and how to open. The full word-for-word plan is the paid part.
 - **Offer check:** is a job offer low, fair or strong, and what to say back.
 - **For employers:** the low, fair and strong figure for any role.

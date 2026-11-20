@@ -2,7 +2,8 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { COUNTRIES, guessWhere, ISO_CODES } from "@/lib/countries";
-import { ESTIMATE_ERRORS, ESTIMATES_ON, ESTIMATES_WITHOUT_SEARCH, requestEstimate, type EstimateTarget } from "@/lib/estimate-client";
+import { ESTIMATE_ERRORS, LIVE_AI_ON, requestEstimate, type EstimateTarget } from "@/lib/estimate-client";
+import { BUILTIN_JOBS, hasBuiltin } from "@/lib/estimates-builtin";
 import { cleanJobTitle, type Estimate } from "@/lib/estimate-shared";
 import { currencySymbol, money, parsePay } from "@/lib/pay/format";
 import { position, rank } from "@/lib/pay/percentile";
@@ -30,6 +31,13 @@ type Props = {
 type Period = "year" | "month" | "hour";
 /** Value of the country list when the visitor wants to type a country that is not on it. */
 const ELSEWHERE = "ZZ";
+/**
+ * Countries offered under "Other". With a live AI behind the site that is every listed country;
+ * without one it is the countries that have built-in estimates.
+ */
+const OTHER_CHOICES = LIVE_AI_ON ? OTHER_COUNTRIES : OTHER_COUNTRIES.filter((item) => hasBuiltin(item.iso));
+/** The jobs with a built-in estimate, in the shape the job search works on. */
+const BUILTIN_AS_JOBS: Job[] = BUILTIN_JOBS.map((item) => ({ code: item.title, title: item.title, slug: "", employees: null, mean: null, aliases: item.aliases }));
 /** What the visitor is doing: checking their own pay, weighing a job offer, or deciding what to offer. */
 export type Mode = "pay" | "offer" | "hiring";
 
@@ -109,9 +117,11 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
   const hours = place?.fullTimeHours ?? 40;
   const current = MODES.find((item) => item.id === mode) ?? MODES[0];
   // A country without official figures can still be checked, by AI estimate only.
-  const estimateOnly = other && ESTIMATES_ON;
+  // Any country under "Other" runs on estimates: built-in ones always, and a live AI where there is one.
+  const estimateOnly = other;
   const wantsEstimate = estimateOnly || custom !== null;
-  const canOfferEstimate = ESTIMATES_ON && isLive && mode === "pay" && custom === null && query.trim().length >= 3;
+  // In the UK and US an unlisted job can only be estimated by a live AI: there are no built-in figures there.
+  const canOfferEstimate = LIVE_AI_ON && isLive && mode === "pay" && custom === null && query.trim().length >= 3;
 
   // Pick the visitor's country once, on the pages that do not fix it.
   useEffect(() => {
@@ -132,7 +142,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
       const iso = where.otherIso;
       setOther(true);
       // Only preselect a country that is actually on the list.
-      setOtherIso(OTHER_COUNTRIES.some((item) => item.iso === iso) || iso === ELSEWHERE ? iso : "");
+      setOtherIso(OTHER_CHOICES.some((item) => item.iso === iso) || (LIVE_AI_ON && iso === ELSEWHERE) ? iso : "");
     });
     return () => cancelAnimationFrame(frame);
   }, [fixedCountry, available]);
@@ -155,9 +165,10 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
     };
   }, [code, isLive]);
 
-  // In "Other" there are no official jobs to suggest: the title is free text for the AI.
-  const jobs = isLive && dataset?.country === code ? dataset.jobs : null;
-  const browseAll = jobs !== null && jobs.length <= 30;
+  // In "Other" the suggestions are the jobs with a built-in estimate, where the country has them.
+  const jobs = other ? (listed && hasBuiltin(listed.iso) ? BUILTIN_AS_JOBS : null) : isLive && dataset?.country === code ? dataset.jobs : null;
+  // A short list (the built-in jobs) can simply be browsed on focus, with no typing needed.
+  const browseAll = jobs !== null && jobs.length <= 40;
   const matches = useMemo(() => {
     if (!jobs) return [];
     if (browseAll && query.trim().length < 2) return jobs.map((item) => ({ job: item, via: null, score: 0 }));
@@ -348,12 +359,12 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                     className="h-12 w-full rounded-xl border-2 border-ink bg-salt px-3 text-base font-medium"
                   >
                     <option value="">Pick your country…</option>
-                    {OTHER_COUNTRIES.map((item) => (
+                    {OTHER_CHOICES.map((item) => (
                       <option key={item.iso} value={item.iso}>
                         {item.name}
                       </option>
                     ))}
-                    <option value={ELSEWHERE}>Somewhere else…</option>
+                    {LIVE_AI_ON && <option value={ELSEWHERE}>Somewhere else…</option>}
                   </select>
                   {otherIso === ELSEWHERE && (
                     <>
@@ -379,30 +390,11 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
             </div>
           )}
 
-          {other && !estimateOnly ? (
-            <div>
-              <p className="display text-3xl">More countries are coming.</p>
-              <p className="mt-3 text-ink-soft">
-                Salty has official pay figures for the UK and the US today. Leave your email and we&apos;ll tell you when {place?.inName ?? "your country"} is
-                covered.
-              </p>
-              <div className="mt-5">
-                <EmailForm
-                  key={otherIso}
-                  interest="country-other"
-                  context={{ country: place?.code ?? "other" }}
-                  cta="Tell me"
-                  successTitle="Done."
-                  successBody="We'll email you when your country is covered."
-                />
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={onSubmit} noValidate>
+          <form onSubmit={onSubmit} noValidate>
               {estimateOnly && (
                 <p className="mb-5 rounded-2xl border-2 border-dashed border-ink/40 p-3 text-sm text-ink-soft">
                   <strong className="text-ink">Outside the UK and US, Salty runs on AI estimates.</strong> We don&apos;t have official figures
-                  for {place?.inName ?? "other countries"} yet, so we look your job up and give you a rough range.
+                  for {place?.inName ?? "other countries"} yet, so you get a rough range instead of an exact rank.
                 </p>
               )}
               <div className={`mb-5 grid grid-cols-3 gap-1 rounded-2xl border-2 border-ink bg-salt p-1 ${estimateOnly ? "hidden" : ""}`} role="tablist" aria-label="What do you want to check?">
@@ -441,7 +433,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                   autoComplete="off"
                   autoCapitalize="none"
                   spellCheck={false}
-                  placeholder={estimateOnly ? "Type your job title" : jobs === null ? "Loading jobs…" : "e.g. nurse, chef, electrician"}
+                  placeholder={estimateOnly ? (jobs ? "e.g. nurse, chef, electrician" : "Type your job title") : jobs === null ? "Loading jobs…" : "e.g. nurse, chef, electrician"}
                   value={query}
                   onChange={(event) => {
                     setQuery(event.target.value);
@@ -584,19 +576,20 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
                 disabled={estimating}
                 className="press mt-6 h-16 w-full rounded-xl border-2 border-ink bg-brine font-display text-2xl font-extrabold tracking-tight text-white shadow-hard-sm disabled:opacity-70"
               >
-                {estimating ? (ESTIMATES_WITHOUT_SEARCH ? "Asking Claude…" : "Searching the web…") : wantsEstimate ? "Estimate my pay" : current.button}
+                {estimating ? "Working it out…" : wantsEstimate ? "Estimate my pay" : current.button}
               </button>
               <p className="mt-3 text-center text-sm text-ink-soft" role="status">
                 {estimating
                   ? "This can take up to a minute."
                   : wantsEstimate
-                    ? "Free. Your job title is sent to our AI to look it up. Your pay is not."
+                    ? LIVE_AI_ON
+                      ? "Free. A job we haven't seen is sent to our AI to look up. Your pay is not."
+                      : "Free. No sign-up. Your pay never leaves this device."
                     : mode === "hiring"
                       ? "Free. Official figures, not job-ad guesses."
                       : "Free. No sign-up. Your pay never leaves this device."}
               </p>
-            </form>
-          )}
+          </form>
           {estimateOnly && (
             <div className="mt-6 border-t border-ink/10 pt-5">
               <p className="mb-3 text-sm text-ink-soft">Want official figures for {place?.inName ?? "your country"}? Get an email if we add them:</p>

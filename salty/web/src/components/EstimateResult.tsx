@@ -17,10 +17,18 @@ const TONE: Record<VerdictId, string> = {
   "top-shelf": "bg-zest text-ink",
 };
 
+/** What to say about how far to trust it, which depends on whether anything was looked up. */
 const CONFIDENCE = {
-  high: "Good sources agree on this.",
-  medium: "Sources roughly agree on this.",
-  low: "Sources are thin or disagree, so treat this as a loose guide.",
+  "web-search": {
+    high: "Good sources agree on this.",
+    medium: "Sources roughly agree on this.",
+    low: "Sources are thin or disagree, so treat this as a loose guide.",
+  },
+  "general-knowledge": {
+    high: "Pay for this job is well documented there, so it should be in the right area.",
+    medium: "Pay for this job is well documented there, so it should be in the right area.",
+    low: "Pay for this job varies a lot there, so treat this as a loose guide.",
+  },
 } as const;
 
 /**
@@ -141,7 +149,8 @@ export function EstimateResult({ country, estimate, pay }: Props) {
             {estimate.method === "web-search"
               ? "We don't have official pay data for this job here, so our AI searched the web and summarised what it found."
               : "We don't have official pay data for this job here, so our AI gave its best estimate from general knowledge, without searching the web."}{" "}
-            {CONFIDENCE[estimate.confidence]}
+            {CONFIDENCE[estimate.method][estimate.confidence]}
+            {estimate.method === "general-knowledge" && " Check it against a local source before you rely on it in a pay conversation."}
           </p>
           {estimate.basis && <p className="mt-2">{estimate.basis}</p>}
           {estimate.sources.length > 0 && (
