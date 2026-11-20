@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import type { Country } from "@/lib/countries";
+import { RESULT_ID, setFunnel } from "@/lib/funnel";
 import { money, shortPeriod } from "@/lib/pay/format";
 import { quantilePoints } from "@/lib/pay/percentile";
 import type { CountryData, Job } from "@/lib/pay/types";
@@ -27,8 +29,13 @@ export function HiringResult({ country, data, job }: Props) {
     ...(high ? [{ label: "Strong", value: high.value, note: `Beats ${high.q} in 100 people already in the job`, tone: "bg-zest" }] : []),
   ];
 
+  useEffect(() => {
+    setFunnel({ stage: "result", mode: "hiring", underpaid: false, resultAt: Date.now(), context: { country: country.code, job: job.code, job_title: job.title } });
+    return () => setFunnel({ stage: "browsing", mode: null, resultAt: null });
+  }, [country.code, job.code, job.title]);
+
   return (
-    <div className="animate-rise space-y-8">
+    <div id={RESULT_ID} className="animate-rise space-y-8">
       <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
         <p className="eyebrow text-ink-soft">What to offer</p>
         <h2 className="display mt-2 text-[clamp(1.75rem,6vw,2.5rem)]">{job.title}</h2>

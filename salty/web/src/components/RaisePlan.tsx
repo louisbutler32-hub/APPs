@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Place } from "@/lib/world";
 import { money } from "@/lib/pay/format";
+import { setFunnel, START_PLAN_EVENT } from "@/lib/funnel";
 import type { Job } from "@/lib/pay/types";
 import { fullPlan, openingLines, QUESTIONS, strength, target, timing, type Answers } from "@/lib/raise-plan";
 import { remember } from "@/lib/signup";
@@ -32,6 +33,23 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
   const m = (value: number) => money(country, value);
 
   const scrollTop = () => requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+
+  // Tell the prompts where this visitor has got to, so nothing interrupts the questions.
+  useEffect(() => {
+    if (stage === "survey") setFunnel({ stage: "plan" });
+    else if (stage === "plan") setFunnel({ stage: unlocked ? "unlocked" : "plan-done" });
+  }, [stage, unlocked]);
+
+  // A prompt elsewhere on the page ("Build my raise plan") starts the questions here.
+  useEffect(() => {
+    const begin = () => {
+      setStage((current) => (current === "intro" ? "survey" : current));
+      setUnlocked(remember.get(UNLOCK_KEY) === "1");
+      requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    };
+    window.addEventListener(START_PLAN_EVENT, begin);
+    return () => window.removeEventListener(START_PLAN_EVENT, begin);
+  }, []);
 
   function start() {
     setStage("survey");
@@ -63,7 +81,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
 
   if (stage === "intro") {
     return (
-      <div ref={top} className="scroll-mt-6 rounded-3xl border-2 border-ink bg-zest p-6 shadow-hard sm:p-9">
+      <div ref={top} id="raise-plan" className="scroll-mt-6 rounded-3xl border-2 border-ink bg-zest p-6 shadow-hard sm:p-9">
         <p className="eyebrow">Next step</p>
         <p className="display mt-2 text-[clamp(1.9rem,7vw,3rem)]">{underpaid ? "Now go and get it." : "Know your next number."}</p>
         <p className="mt-3 max-w-xl text-lg">
@@ -83,7 +101,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
     const picked = answers[question.id];
     const canContinue = question.multi || picked !== undefined;
     return (
-      <div ref={top} className="scroll-mt-6 rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
+      <div ref={top} id="raise-plan" className="scroll-mt-6 rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
         <div className="flex items-center justify-between gap-4">
           <p className="eyebrow text-ink-soft">
             Raise plan · {step + 1} of {QUESTIONS.length}
@@ -151,7 +169,7 @@ export function RaisePlan({ country, job, pay, underpaid, official = true }: Pro
   const sections = fullPlan(input);
 
   return (
-    <div ref={top} className="scroll-mt-6 space-y-6">
+    <div ref={top} id="raise-plan" className="scroll-mt-6 space-y-6">
       <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
         <p className="eyebrow text-ink-soft">Your raise plan</p>
 

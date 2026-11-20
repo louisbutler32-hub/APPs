@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Analytics } from "@/components/Analytics";
 import { EmailGate } from "@/components/EmailGate";
+import { ExitPrompt, NextStepBar } from "@/components/Prompts";
 import { PreviewGuard } from "@/components/PreviewGuard";
 import { brand } from "@/lib/brand";
 import "./globals.css";
@@ -59,6 +60,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh overflow-x-clip">
         {children}
         <EmailGate />
+        <NextStepBar />
+        <ExitPrompt />
         <Analytics />
         {process.env.NEXT_PUBLIC_PREVIEW === "1" && <PreviewGuard />}
       </body>

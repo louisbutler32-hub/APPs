@@ -93,6 +93,17 @@ Scattered grains: small tilted squares, as if salt has been sprinkled over the p
 - Captions in the headline face, Ink on Salt or white on Brine, with the hard shadow.
 - End card: the wordmark, "Are you underpaid?" and the web address.
 
+## Prompts and pop-ups
+
+Salty asks for things, and it must never nag. The rules are built into the site (`web/src/lib/funnel.ts`) and apply to anything added later:
+
+- **Value first.** Nothing is offered until a result has been on screen for a few seconds.
+- **One interruption per visit.** The email prompt on opening counts. If it appeared, the leave-intent prompt shows as a small corner card that blocks nothing.
+- **Only one thing on screen.** The next-step bar hides while a prompt is open.
+- **Never mid-task.** Nothing appears while someone is answering the raise-plan questions.
+- **No means no.** A closed prompt stays away for a week, the email prompt for a month, and the bar for the rest of the visit.
+- **The offer fits what they did.** Checked pay: the free raise plan. Finished the free plan: the full plan. Anything else: the weekly email.
+
 ## Share image
 
 The share image is the brand's main advert, so its layout is fixed: wordmark top left, "MY PAY CHECK" and the country, the giant figure, one sentence in the first person, the job, the verdict chip, and a dark footer with "Are you underpaid?" and the address. It shows rank and never pay, which is what makes people comfortable posting it.

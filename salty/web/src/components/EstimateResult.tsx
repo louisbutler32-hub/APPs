@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Place } from "@/lib/world";
 import type { Estimate } from "@/lib/estimate-shared";
+import { RESULT_ID, setFunnel } from "@/lib/funnel";
 import { money, moneyShort } from "@/lib/pay/format";
 import type { Job } from "@/lib/pay/types";
 import { verdictFor, type VerdictId } from "@/lib/pay/verdict";
@@ -67,6 +68,12 @@ export function EstimateResult({ country, estimate, pay }: Props) {
     return () => cancelAnimationFrame(frame);
   }, [target]);
 
+  const underpaid = verdict.shakers >= 2;
+  useEffect(() => {
+    setFunnel({ stage: "result", mode: "estimate", underpaid, resultAt: Date.now(), context: { country: country.code, job_title: estimate.title } });
+    return () => setFunnel({ stage: "browsing", mode: null, resultAt: null });
+  }, [underpaid, country.code, estimate.title]);
+
   // The raise plan works from pay points, so give it the estimate in that shape.
   const job: Job = {
     code: "estimate",
@@ -81,7 +88,7 @@ export function EstimateResult({ country, estimate, pay }: Props) {
   };
 
   return (
-    <div className="animate-rise">
+    <div id={RESULT_ID} className="animate-rise">
       <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
         <div className="flex flex-wrap items-center gap-3">
           <span className={`inline-flex items-center gap-2 rounded-full border-2 border-ink px-4 py-1.5 font-display text-lg font-extrabold tracking-tight ${TONE[verdict.id]}`}>

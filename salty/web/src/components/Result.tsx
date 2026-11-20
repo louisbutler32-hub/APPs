@@ -9,6 +9,7 @@ import type { CountryData, Job } from "@/lib/pay/types";
 import { verdictFor, type Verdict, type VerdictId } from "@/lib/pay/verdict";
 import { canvasToBlob, drawShareCard, type ShareCardContent } from "@/lib/share-card";
 import { track } from "@/lib/track";
+import { RESULT_ID, setFunnel } from "@/lib/funnel";
 import { target } from "@/lib/raise-plan";
 import { EmailForm } from "./EmailForm";
 import { RaisePlan } from "./RaisePlan";
@@ -148,6 +149,11 @@ export function Result({ mode, country, data, job, pay }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shareState, setShareState] = useState<"idle" | "working" | "copied">("idle");
   const [cardUrl, setCardUrl] = useState<string | null>(null);
+  const shakers = place === null ? 0 : verdictFor(place).shakers;
+  useEffect(() => {
+    setFunnel({ stage: "result", mode, underpaid: shakers >= 2, resultAt: Date.now(), context: { country: country.code, job: job.code, job_title: job.title } });
+    return () => setFunnel({ stage: "browsing", mode: null, resultAt: null });
+  }, [mode, shakers, country.code, job.code, job.title]);
   useEffect(() => () => {
     if (cardUrl) URL.revokeObjectURL(cardUrl);
   }, [cardUrl]);
@@ -216,7 +222,7 @@ export function Result({ mode, country, data, job, pay }: Props) {
   }
 
   return (
-    <div className="animate-rise">
+    <div id={RESULT_ID} className="animate-rise">
       <div className="rounded-3xl border-2 border-ink bg-white p-6 shadow-hard sm:p-9">
         <div className="flex flex-wrap items-center gap-3">
           <span className={`inline-flex items-center gap-2 rounded-full border-2 border-ink px-4 py-1.5 font-display text-lg font-extrabold tracking-tight ${TONE[verdict.id]}`}>

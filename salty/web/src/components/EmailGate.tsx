@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { markInterrupted } from "@/lib/funnel";
 import { remember } from "@/lib/signup";
 import { track } from "@/lib/track";
 import { EmailForm } from "./EmailForm";
@@ -37,6 +38,7 @@ export function EmailGate() {
       // A beat after load, so the page is seen first and the ask does not feel like a wall.
       timer = setTimeout(() => {
         setOpen(true);
+        markInterrupted();
         track("gate", { action: "shown" });
       }, 900);
     }
