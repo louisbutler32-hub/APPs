@@ -22,7 +22,7 @@ What stands between the repo and a live test. Items marked **You** need an accou
 
 ## Data
 
-- [ ] **You: United States.** The US statistics site refuses automated downloads, so download the national wage file in a browser (instructions at the top of `salty/data/pipelines/us/build.py`), add it to `pipelines/us/raw/`, and run the pipeline. The parser has only been run on a stand-in file, so check its first output against the spreadsheet.
+- [x] United States: loaded from the May 2025 national wage file. When BLS publishes a new year, download the new "National" file from https://www.bls.gov/oes/tables.htm in a browser, put it in `salty/data/pipelines/us/raw/` and rerun the pipeline.
 - [ ] **You: Australia.** The free data that could be fetched mixes part-time workers in and misleads, so Australia is switched off. Jobs and Skills Australia publishes full-time pay by job, but its site would not respond to automated requests. Download its "Occupation and Industry Profiles" occupation spreadsheet in a browser, add it to `salty/data/pipelines/au/raw/`, and the pipeline can be rebuilt on it.
 - [ ] **New Zealand** has no usable free per-job pay data today; see `salty/data/SOURCES.md`. It stays switched off.
 - [ ] Read `salty/data/SOURCES.md` for each country's known weaknesses before making claims in videos.

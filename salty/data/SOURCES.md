@@ -9,7 +9,7 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 | United Kingdom | Yes | 362 | Spread (up to 11 points per job, thinner at the top) |
 | New Zealand | **Held back** | 8 broad groups in the file | Middle only, hourly, from 2019 |
 | Australia | **Held back** | 1,166 in the file | Middle and average only, and not full-time |
-| United States | **Waiting on a file** | None yet | Spread (5 points per job) once loaded |
+| United States | Yes | 825 | Spread (5 points per job) |
 
 ## United Kingdom
 
@@ -36,21 +36,17 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 - **What would fix it:** Jobs and Skills Australia publishes median full-time weekly earnings by occupation ("Occupation and Industry Profiles"). Its site accepted the connection but returned nothing to automated requests, so the file has not been seen and none of this is confirmed. If someone downloads that spreadsheet in a browser and adds it to `pipelines/au/raw/`, the pipeline can be rebuilt on it. It would give a full-time middle figure for a few hundred jobs, probably without the spread.
 - **Other options looked at and rejected:** Australian Bureau of Statistics earnings releases give the spread only for 8 or 43 broad groups, or an average only at job level.
 
-## United States (waiting on a file)
+## United States
 
-- **Source:** U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, national estimates.
-- **Why there is no data yet:** www.bls.gov refuses automated downloads and says so ("bot activity that doesn't conform to BLS usage policy is prohibited"). The pipeline therefore reads a file downloaded by hand. Instructions are at the top of `pipelines/us/build.py`.
-- **Licence:** U.S. federal government work, generally public domain. The BLS copyright page has not been read from the build environment; confirm it when the file is added.
+- **Source:** U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, national estimates, May 2025 (file `oesm25nat.zip`, sheet `national_M2025_dl`).
+- **Dataset page:** https://www.bls.gov/oes/tables.htm
+- **What the figures are:** yearly wages before tax for employees; self-employed people are not counted. For most jobs BLS works the yearly figure out from the hourly wage as a full-time, year-round amount (2,080 hours), so part-time workers are compared on a full-time footing. Five points per job: the 10%, 25%, middle, 75% and 90% levels, plus the average.
+- **Job titles for search:** O*NET 31.0 Database (U.S. Department of Labor): the titles workers most often report, then other job titles, up to 25 per job. 813 of 825 jobs have them.
+- **Licence:** pay figures are U.S. federal government work, generally public domain; the BLS copyright page has not been read from the build environment. Job titles are Creative Commons Attribution 4.0, read directly at https://www.onetcenter.org/license_db.html, with the credit wording it asks for when information has been modified.
+- **Access:** www.bls.gov refuses automated downloads and says so ("bot activity that doesn't conform to BLS usage policy is prohibited"), so the pay file is downloaded by hand in a browser and placed in `pipelines/us/raw/`. The current file was supplied that way. The O*NET title files are fetched automatically; its robots.txt allows them.
 - **The official data service was tried too:** `api.bls.gov` is meant for programs, but without a registration key it answered that the daily request limit for unregistered use was already reached (the limit is shared by everyone coming from the same address). A free key would lift that, but the key has to travel in the request itself, so it would need handling as a secret. The hand-downloaded file is simpler and gives every job at once.
-- **State of the pipeline:** written from the published file layout and run only against a small stand-in file. Check its first real output against the spreadsheet by eye.
-
-## New Zealand (held back from the site)
-
-- **Source in the file today:** Stats NZ, Household Labour Force Survey income release, June 2019 quarter: median hourly earnings from wages and salaries for the 8 broad occupation groups. Employment counts come from the September 2026 quarterly labour market release.
-- **Licence:** Creative Commons Attribution 4.0 International, read directly at https://www.stats.govt.nz/about-us/copyright/. Credit wording for adapted data: "This work is based on/includes Stats NZ's data which are licensed by Stats NZ for reuse under the Creative Commons Attribution 4.0 International licence."
-- **Why it is held back:** it is 8 broad groups ("Professionals", "Labourers"), not jobs; it is an hourly middle figure with no yearly figure and no spread; and it is seven years old. It cannot support a per-job pay check. New Zealand is left out of `web/src/lib/live-countries.json`.
-- **What exists elsewhere (none of it read at source, all from search results):**
-  - Stats NZ's Aotearoa Data Explorer has the same 8-group table up to June 2026 with weekly figures and averages. It needs a free API key. Still broad groups only.
-  - The 2023 Census has income bands by occupation, possibly at a finer level; that level is unconfirmed, and it counts all income, not just pay.
-  - The government careers site Tahatū has pay ranges for 800+ jobs, but access needs a signed agreement, the figures are described as estimates, and its terms reportedly say they should not be used in pay negotiations, which is Salty's whole purpose.
-- **Conclusion:** there is no free official per-job pay dataset for New Zealand that Salty can use today.
+- **Checked:** ten jobs compared against the spreadsheet by eye, all matching; and ordinary full-time wages for seven common jobs all land in the middle of their range (`web/src/lib/pay/ordinary-wage.test.ts`).
+- **Weaknesses:**
+  - Five of 830 jobs publish hourly wages only (actors, dancers, musicians and singers, disc jockeys, other entertainers) and are left out.
+  - The file's notes say a wage at or above $239,200 a year is shown as "#", but this file contains no such marks and does publish higher figures (for example a 90% level of $507,730 for chief executives). The values are used as published. This could not be cross-checked against the BLS site from the build environment.
+  - 12 jobs that BLS groups differently from O*NET have no everyday titles and are found by their official name only.

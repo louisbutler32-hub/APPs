@@ -36,7 +36,7 @@ export const COUNTRIES: Record<CountryCode, Country> = {
     measure: "yearly pay before tax for full-time employees who have been in the job at least a year",
     publisher: "Office for National Statistics", live: isLive("uk") },
   us: { code: "us", name: "United States", inName: "the US", flag: "🇺🇸", locale: "en-US", currency: "USD", fullTimeHours: 40, examplePay: 55000,
-    measure: "yearly wages before tax for employees",
+    measure: "yearly wages before tax for employees, with hourly pay counted as a full-time, year-round wage",
     publisher: "Bureau of Labor Statistics", live: isLive("us"),
     soonNote: "US pay figures are on the way. The official source has to be loaded by hand and that hasn't been done yet." },
   au: { code: "au", name: "Australia", inName: "Australia", flag: "🇦🇺", locale: "en-AU", currency: "AUD", fullTimeHours: 38, examplePay: 80000,
