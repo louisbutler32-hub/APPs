@@ -26,6 +26,8 @@ Use the same handle everywhere if you can get it. Put the site address in each b
 
 ## Six video formats
 
+Formats 1 and 2 are made for you. `salty/video` turns the pay data into finished ten-second clips, each with a caption to post with it: run `npm run make` there (see `salty/video/README.md`). The figures are read from the same data as the site, so a clip can never quote a number the site does not show. Add sound in the app when you post.
+
 **1. Which pays more?** Two jobs on screen, three seconds to guess, then the reveal. Built from data, no face needed, and people argue in the comments.
 
 > "Which pays more in the UK: train driver or solicitor?" … "Train driver. £74,376 against £57,198."

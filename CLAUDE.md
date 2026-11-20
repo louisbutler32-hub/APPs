@@ -9,6 +9,7 @@ A pay checker: type a job and a salary, see where you rank among everyone doing 
 - `salty/web` is the site. Next.js, exported as plain static files. This version of Next.js is newer than most training data: read `salty/web/AGENTS.md` and the guides in `node_modules/next/dist/docs/` before changing framework-level code.
 - `salty/data` is the pay data. `pipelines/<country>/build.py` writes `out/<country>.json`; the site reads only `out/`. `SOURCES.md` records every source, its licence and its weaknesses.
 - AI estimates come from two places. `web/src/lib/estimates-builtin.ts` holds built-in ranges for common jobs in ten countries, written by AI from general knowledge: they ship with the site and cost nothing. `salty/web/server` and `salty/web/functions` are the one piece of server code: an optional live lookup for everything else, which needs an Anthropic API key held as a host secret and by default does not search the web. Shared types and the answer checker are in `web/src/lib/estimate-shared.ts`.
+- `salty/video` makes the short videos (Remotion). `content/videos.json` names the jobs for each clip; `npm run make` reads the pay from `salty/data/out` and writes clips and captions to `out/`. Official figures only: never a typed-in number, never an AI estimate.
 - `salty/emails` holds the follow-up email sequence and how to load it into an email tool.
 - `salty/docs` holds the brand guide, the marketing playbook, the money plan and the launch checklist.
 

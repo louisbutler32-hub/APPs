@@ -1,0 +1,42 @@
+{
+  "_about": "The clips to make. Each job is named by its exact official title in salty/data/out, plus the short name shown on screen. Pay figures are NOT written here: they are read from the data when a clip is made, so they always match the site. Add a line to make a new clip.",
+  "site": "your-site.com",
+  "uk": {
+    "whichPaysMore": [
+      { "a": { "title": "Train and tram drivers", "name": "Train driver" }, "b": { "title": "Solicitors and lawyers", "name": "Solicitor" } },
+      { "a": { "title": "Scaffolders, stagers and riggers", "name": "Scaffolder" }, "b": { "title": "Architects", "name": "Architect" } },
+      { "a": { "title": "Police officers (sergeant and below)", "name": "Police officer" }, "b": { "title": "Paramedics", "name": "Paramedic" } },
+      { "a": { "title": "Care workers and home carers", "name": "Care worker" }, "b": { "title": "Warehouse operatives", "name": "Warehouse worker" } },
+      { "a": { "title": "Electricians and electrical fitters", "name": "Electrician" }, "b": { "title": "Plumbers & heating and ventilating installers and repairers", "name": "Plumber" } },
+      { "a": { "title": "Crane drivers", "name": "Crane driver" }, "b": { "title": "Veterinarians", "name": "Vet" } },
+      { "a": { "title": "Large goods vehicle drivers", "name": "Lorry driver" }, "b": { "title": "Graphic and multimedia designers", "name": "Graphic designer" } },
+      { "a": { "title": "Chefs", "name": "Chef" }, "b": { "title": "Estate agents and auctioneers", "name": "Estate agent" } }
+    ],
+    "gapInsideJob": [
+      { "title": "Programmers and software development professionals", "plural": "software developers" },
+      { "title": "Sales accounts and business development managers", "plural": "sales managers" },
+      { "title": "Other nursing professionals", "plural": "nurses" },
+      { "title": "Secondary education teaching professionals", "plural": "secondary teachers" },
+      { "title": "Care workers and home carers", "plural": "care workers" }
+    ]
+  },
+  "us": {
+    "whichPaysMore": [
+      { "a": { "title": "Elevator and Escalator Installers and Repairers", "name": "Elevator installer" }, "b": { "title": "Architects, Except Landscape and Naval", "name": "Architect" } },
+      { "a": { "title": "Dental Hygienists", "name": "Dental hygienist" }, "b": { "title": "Registered Nurses", "name": "Registered nurse" } },
+      { "a": { "title": "Electricians", "name": "Electrician" }, "b": { "title": "Plumbers, Pipefitters, and Steamfitters", "name": "Plumber" } },
+      { "a": { "title": "Heavy and Tractor-Trailer Truck Drivers", "name": "Truck driver" }, "b": { "title": "Paramedics", "name": "Paramedic" } },
+      { "a": { "title": "Electrical Power-Line Installers and Repairers", "name": "Power-line worker" }, "b": { "title": "Web Developers", "name": "Web developer" } },
+      { "a": { "title": "Police and Sheriff's Patrol Officers", "name": "Police officer" }, "b": { "title": "Elementary School Teachers, Except Special Education", "name": "Elementary teacher" } },
+      { "a": { "title": "Nuclear Power Reactor Operators", "name": "Reactor operator" }, "b": { "title": "Commercial Pilots", "name": "Commercial pilot" } },
+      { "a": { "title": "Waiters and Waitresses", "name": "Server" }, "b": { "title": "Cashiers", "name": "Cashier" } }
+    ],
+    "gapInsideJob": [
+      { "title": "Lawyers", "plural": "lawyers" },
+      { "title": "Software Developers", "plural": "software developers" },
+      { "title": "Waiters and Waitresses", "plural": "servers" },
+      { "title": "Real Estate Sales Agents", "plural": "real estate agents" },
+      { "title": "Commercial Pilots", "plural": "commercial pilots" }
+    ]
+  }
+}
