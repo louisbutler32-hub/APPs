@@ -7,7 +7,7 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 | Country | On the site? | Jobs | Has the spread, or only the middle? |
 |---|---|---|---|
 | United Kingdom | Yes | 362 | Spread (up to 11 points per job, thinner at the top) |
-| New Zealand | See below | See below | See below |
+| New Zealand | **Held back** | 8 broad groups in the file | Middle only, hourly, from 2019 |
 | Australia | **Held back** | 1,166 in the file | Middle and average only, and not full-time |
 | United States | **Waiting on a file** | None yet | Spread (5 points per job) once loaded |
 
@@ -21,7 +21,7 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 - **Access:** fetched automatically. The pipeline identifies itself honestly rather than posing as a browser. ONS's fair use policy also asks automated clients for a contact; set `SALTY_USER_AGENT` to include one before running this on a schedule.
 - **Checked:** every one of the 4,706 values for the 362 jobs was compared back against the spreadsheet with no mismatches, and the all-employee middle figure (£40,911) matches the ONS bulletin.
 - **Weaknesses:**
-  - ONS hides figures it considers unreliable. 50 of 412 job groups have no middle figure and are left out (including dentists, pilots, musicians and actors). Only 42 jobs have a published 90% point, so for most jobs the top of the range is reported as "top 20%" or "top 25%" rather than a precise rank.
+  - ONS hides figures it considers unreliable. 50 of 412 job groups have no middle figure and are left out (including dentists, pilots, musicians and actors). Only 42 jobs have a published 90% point, so for most jobs the top of the range is reported as a band, such as "top 25%", rather than a precise rank.
   - Provisional figures are revised about a year later.
   - What "gross" covers (overtime, bonuses) was not found stated in the file; treat it as pay before tax and National Insurance.
   - Some everyday titles from the index are dated. They are used for search only.
@@ -42,3 +42,14 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 - **Why there is no data yet:** www.bls.gov refuses automated downloads and says so ("bot activity that doesn't conform to BLS usage policy is prohibited"). The pipeline therefore reads a file downloaded by hand. Instructions are at the top of `pipelines/us/build.py`.
 - **Licence:** U.S. federal government work, generally public domain. The BLS copyright page has not been read from the build environment; confirm it when the file is added.
 - **State of the pipeline:** written from the published file layout and run only against a small stand-in file. Check its first real output against the spreadsheet by eye.
+
+## New Zealand (held back from the site)
+
+- **Source in the file today:** Stats NZ, Household Labour Force Survey income release, June 2019 quarter: median hourly earnings from wages and salaries for the 8 broad occupation groups. Employment counts come from the September 2026 quarterly labour market release.
+- **Licence:** Creative Commons Attribution 4.0 International, read directly at https://www.stats.govt.nz/about-us/copyright/. Credit wording for adapted data: "This work is based on/includes Stats NZ's data which are licensed by Stats NZ for reuse under the Creative Commons Attribution 4.0 International licence."
+- **Why it is held back:** it is 8 broad groups ("Professionals", "Labourers"), not jobs; it is an hourly middle figure with no yearly figure and no spread; and it is seven years old. It cannot support a per-job pay check. `live` is `false` for New Zealand in `web/src/lib/countries.ts`.
+- **What exists elsewhere (none of it read at source, all from search results):**
+  - Stats NZ's Aotearoa Data Explorer has the same 8-group table up to June 2026 with weekly figures and averages. It needs a free API key. Still broad groups only.
+  - The 2023 Census has income bands by occupation, possibly at a finer level; that level is unconfirmed, and it counts all income, not just pay.
+  - The government careers site Tahatū has pay ranges for 800+ jobs, but access needs a signed agreement, the figures are described as estimates, and its terms reportedly say they should not be used in pay negotiations, which is Salty's whole purpose.
+- **Conclusion:** there is no free official per-job pay dataset for New Zealand that Salty can use today.

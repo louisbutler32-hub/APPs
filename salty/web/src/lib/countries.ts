@@ -41,7 +41,9 @@ export const COUNTRIES: Record<CountryCode, Country> = {
     live: false },
   nz: { code: "nz", name: "New Zealand", inName: "New Zealand", flag: "🇳🇿", locale: "en-NZ", currency: "NZD", fullTimeHours: 40, examplePay: 70000,
     measure: "pay before tax",
-    publisher: "Stats NZ", live: true },
+    publisher: "Stats NZ",
+    // Held back: the only openly downloadable figures are 8 broad groups, hourly, from 2019.
+    live: false },
 };
 
 export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];

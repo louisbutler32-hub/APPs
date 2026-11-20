@@ -151,7 +151,8 @@ export async function drawShareCard(canvas: HTMLCanvasElement, content: ShareCar
   ctx.letterSpacing = "-0.5px";
   ctx.font = `800 semi-condensed 68px ${display}`;
   let y = figureBase + 104;
-  for (const line of wrap(ctx, content.sentence, WIDTH - pad * 2, 3)) {
+  const sentence = wrap(ctx, content.sentence, WIDTH - pad * 2, 3);
+  for (const line of sentence) {
     ctx.fillText(line, pad, y);
     y += 74;
   }
@@ -159,7 +160,8 @@ export async function drawShareCard(canvas: HTMLCanvasElement, content: ShareCar
   ctx.font = `500 38px ${sans}`;
   ctx.fillStyle = "#4b4a52";
   y += 8;
-  for (const line of wrap(ctx, content.jobTitle, WIDTH - pad * 2, 2)) {
+  // A long sentence leaves room for only one line of job title above the verdict chip.
+  for (const line of wrap(ctx, content.jobTitle, WIDTH - pad * 2, sentence.length > 1 ? 1 : 2)) {
     ctx.fillText(line, pad, y);
     y += 50;
   }
