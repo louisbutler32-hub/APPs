@@ -25,12 +25,31 @@ type Period = "year" | "hour";
 type Dataset = Pick<CountryData, "country" | "period" | "basis" | "source" | "jobs">;
 
 const STORAGE_KEY = "salty.country";
+// Empty on the live site. A preview hosted in a sub-folder sets it so files load relative to the page.
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+// Storage can be missing or blocked (private browsing, embedded previews), so never let it break the page.
+function readSavedCountry(): string | null {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveCountry(code: CountryCode) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, code);
+  } catch {
+    // Not being able to remember the choice is fine.
+  }
+}
 const cache = new Map<CountryCode, Promise<Dataset>>();
 
 function loadDataset(code: CountryCode): Promise<Dataset> {
   let pending = cache.get(code);
   if (!pending) {
-    pending = fetch(`/data/${code}.json`).then((response) => {
+    pending = fetch(`${BASE}/data/${code}.json`).then((response) => {
       if (!response.ok) throw new Error(`Could not load ${code} pay data`);
       return response.json() as Promise<Dataset>;
     });
@@ -63,7 +82,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
   // Pick the visitor's country once, on the pages that do not fix it.
   useEffect(() => {
     if (fixedCountry) return;
-    const saved = window.localStorage.getItem(STORAGE_KEY) as CountryCode | null;
+    const saved = readSavedCountry() as CountryCode | null;
     const zone = Intl.DateTimeFormat().resolvedOptions().timeZone ?? "";
     const next = saved && available.includes(saved) ? saved : guessCountry(navigator.languages, zone, available);
     const frame = requestAnimationFrame(() => setCode(next));
@@ -100,7 +119,7 @@ export function Checker({ available, country: fixedCountry, job: fixedJob, intro
 
   function changeCountry(next: CountryCode) {
     setCode(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    saveCountry(next);
     setJob(null);
     setQuery("");
     setChecked(null);

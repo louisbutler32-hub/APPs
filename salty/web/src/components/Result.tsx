@@ -149,6 +149,10 @@ export function Result({ country, data, job, pay }: Props) {
   const figure = useCountUp(words?.figure ?? "");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [shareState, setShareState] = useState<"idle" | "working" | "copied">("idle");
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
+  useEffect(() => () => {
+    if (cardUrl) URL.revokeObjectURL(cardUrl);
+  }, [cardUrl]);
 
   if (!words || place === null) {
     return (
@@ -183,6 +187,10 @@ export function Result({ country, data, job, pay }: Props) {
     setShareState("idle");
     if (!blob) return;
     const file = new File([blob], "salty-pay-check.png", { type: "image/png" });
+    // Always show the card on the page too, so there is something to save by hand
+    // wherever sharing and downloads are blocked.
+    const url = URL.createObjectURL(blob);
+    setCardUrl(url);
     track("share", { kind: "image", verdict: verdict.id, country: country.code });
     if (navigator.canShare?.({ files: [file] })) {
       try {
@@ -193,14 +201,17 @@ export function Result({ country, data, job, pay }: Props) {
       }
     }
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
+    link.href = url;
     link.download = file.name;
     link.click();
-    URL.revokeObjectURL(link.href);
   }
 
   async function copyLink() {
-    await navigator.clipboard.writeText(shareUrl);
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+    } catch {
+      return; // Clipboard blocked: leave the button as it is rather than claim it worked.
+    }
     track("share", { kind: "link", verdict: verdict.id, country: country.code });
     setShareState("copied");
     setTimeout(() => setShareState("idle"), 1800);
@@ -263,6 +274,13 @@ export function Result({ country, data, job, pay }: Props) {
         </div>
         <p className="mt-3 text-sm text-ink-soft">The share image shows your rank, never your pay.</p>
         <canvas ref={canvasRef} className="hidden" />
+        {cardUrl && (
+          <figure className="mt-5 animate-pop">
+            {/* eslint-disable-next-line @next/next/no-img-element -- a locally generated image, nothing to optimise */}
+            <img src={cardUrl} alt={`Share image: ${words.figure} ${words.mine}`} className="w-full max-w-xs rounded-2xl border-2 border-ink shadow-hard-sm" />
+            <figcaption className="mt-2 text-sm text-ink-soft">Your share image. Press and hold (or right-click) to save it.</figcaption>
+          </figure>
+        )}
 
         <details className="mt-6 border-t border-ink/10 pt-4 text-sm text-ink-soft">
           <summary className="cursor-pointer font-medium text-ink">How we worked this out</summary>

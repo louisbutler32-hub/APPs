@@ -32,7 +32,7 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 - **Dataset page:** https://data.gov.au/data/dataset/taxation-statistics-2023-24
 - **What the figures are:** the middle and the average of salary or wage income reported on 2023-24 tax returns, by occupation, for everyone with that occupation code whatever their hours: full-time, part-time, casual and part-year workers together.
 - **Licence:** Creative Commons Attribution 2.5 Australia, as shown on the dataset page. Commercial use is allowed with credit.
-- **Why it is held back:** because part-time and casual workers are included, an ordinary full-time wage ranks near the top. In testing, a full-time barista on $29.50 an hour came out as paid more than about 97% of baristas. That would mislead, so `live` is `false` for Australia in `web/src/lib/countries.ts`.
+- **Why it is held back:** because part-time and casual workers are included, an ordinary full-time wage ranks near the top. In testing, a full-time barista on $29.50 an hour came out as paid more than about 97% of baristas. That would mislead, so Australia is left out of `web/src/lib/live-countries.json`.
 - **What would fix it:** Jobs and Skills Australia publishes median full-time weekly earnings by occupation ("Occupation and Industry Profiles"). Its site accepted the connection but returned nothing to automated requests, so the file has not been seen and none of this is confirmed. If someone downloads that spreadsheet in a browser and adds it to `pipelines/au/raw/`, the pipeline can be rebuilt on it. It would give a full-time middle figure for a few hundred jobs, probably without the spread.
 - **Other options looked at and rejected:** Australian Bureau of Statistics earnings releases give the spread only for 8 or 43 broad groups, or an average only at job level.
 
@@ -47,7 +47,7 @@ Outputs live in `out/<country>.json`. Raw downloads go in `pipelines/<country>/r
 
 - **Source in the file today:** Stats NZ, Household Labour Force Survey income release, June 2019 quarter: median hourly earnings from wages and salaries for the 8 broad occupation groups. Employment counts come from the September 2026 quarterly labour market release.
 - **Licence:** Creative Commons Attribution 4.0 International, read directly at https://www.stats.govt.nz/about-us/copyright/. Credit wording for adapted data: "This work is based on/includes Stats NZ's data which are licensed by Stats NZ for reuse under the Creative Commons Attribution 4.0 International licence."
-- **Why it is held back:** it is 8 broad groups ("Professionals", "Labourers"), not jobs; it is an hourly middle figure with no yearly figure and no spread; and it is seven years old. It cannot support a per-job pay check. `live` is `false` for New Zealand in `web/src/lib/countries.ts`.
+- **Why it is held back:** it is 8 broad groups ("Professionals", "Labourers"), not jobs; it is an hourly middle figure with no yearly figure and no spread; and it is seven years old. It cannot support a per-job pay check. New Zealand is left out of `web/src/lib/live-countries.json`.
 - **What exists elsewhere (none of it read at source, all from search results):**
   - Stats NZ's Aotearoa Data Explorer has the same 8-group table up to June 2026 with weekly figures and averages. It needs a free API key. Still broad groups only.
   - The 2023 Census has income bands by occupation, possibly at a finer level; that level is unconfirmed, and it counts all income, not just pay.

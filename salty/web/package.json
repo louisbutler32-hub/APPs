@@ -13,7 +13,8 @@
     "typecheck": "npm run sync-data && next typegen && tsc --noEmit",
     "pretest": "npm run sync-data",
     "test": "vitest run",
-    "search-check": "npm run sync-data && node scripts/search-check.mts"
+    "search-check": "npm run sync-data && node scripts/search-check.mts",
+    "preview:build": "node scripts/make-preview.mjs"
   },
   "dependencies": {
     "next": "16.4.6",
